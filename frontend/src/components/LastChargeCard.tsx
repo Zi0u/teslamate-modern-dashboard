@@ -100,7 +100,7 @@ export function LastChargeCard() {
     hour: "2-digit",
     minute: "2-digit",
   });
-  const timeAgo = formatTimeAgo(endDate, t);
+  const timeAgo = formatTimeAgo(endDate, t as (key: string) => string);
 
   return (
     <Card>

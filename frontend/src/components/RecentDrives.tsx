@@ -79,7 +79,7 @@ export function RecentDrives() {
             <div className="absolute left-[23px] top-3 bottom-3 w-px border-l border-dashed border-muted-foreground/30" />
 
             <div className="space-y-3">
-              {data.map((drive, index) => (
+              {data.map((drive) => (
                 <div key={drive.id} className="relative flex gap-3">
                   {/* Timeline: date badge */}
                   <div className="flex items-center shrink-0 z-10">

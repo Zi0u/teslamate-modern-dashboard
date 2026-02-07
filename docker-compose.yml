@@ -1,0 +1,27 @@
+services:
+  teslamate-modern-dashboard:
+    build: .
+    image: teslamate-modern-dashboard
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=teslamate
+      - DATABASE_USER=teslamate_readonly
+      - DATABASE_PASSWORD=readonly_password
+      - PORT=3001
+      # Optional: protect the dashboard with a login/password
+      # - AUTH_USERNAME=admin
+      # - AUTH_PASSWORD=your_password_here
+      # Uncomment to run in demo mode (no database needed):
+      # - DEMO_MODE=true
+
+# Connect to the existing TeslaMate Docker network
+# so "database" hostname resolves to the PostgreSQL container.
+# Adjust the network name if yours differs (run: docker network ls).
+networks:
+  default:
+    name: teslamate_default
+    external: true

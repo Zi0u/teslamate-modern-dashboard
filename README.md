@@ -89,6 +89,52 @@ npm run build
 
 The dashboard will be available at `http://localhost:5173` (dev) with the API on port `3001`.
 
+## Docker
+
+The easiest way to deploy if you already run TeslaMate in Docker.
+
+### Quick start
+
+```bash
+git clone https://github.com/Zi0u/teslamate-modern-dashboard.git
+cd teslamate-modern-dashboard
+
+# Edit docker-compose.yml with your database credentials, then:
+docker compose up -d
+```
+
+The dashboard will be available at `http://your-server:3001`.
+
+### Add to your existing TeslaMate stack
+
+Add this service to your TeslaMate `docker-compose.yml`:
+
+```yaml
+  teslamate-modern-dashboard:
+    build:
+      context: ./teslamate-modern-dashboard
+    image: teslamate-modern-dashboard
+    restart: unless-stopped
+    depends_on:
+      - database
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=teslamate
+      - DATABASE_USER=teslamate_readonly
+      - DATABASE_PASSWORD=your_password_here
+      - PORT=3001
+```
+
+### Demo mode with Docker
+
+```bash
+docker build -t teslamate-modern-dashboard .
+docker run --rm -p 3001:3001 -e DEMO_MODE=true teslamate-modern-dashboard
+```
+
 ## Tech Stack
 
 - **Frontend**: React 18 + Vite + Tailwind CSS + Recharts + React Query

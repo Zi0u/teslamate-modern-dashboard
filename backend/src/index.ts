@@ -1,6 +1,7 @@
 import "./config/env";
 import express from "express";
 import cors from "cors";
+import path from "path";
 import { env } from "./config/env";
 import { testConnection } from "./config/database";
 import carRoutes from "./routes/car";
@@ -15,6 +16,22 @@ const PORT = env.PORT;
 
 app.use(cors());
 app.use(express.json());
+
+// HTTP Basic Auth (optional: only active if AUTH_USERNAME and AUTH_PASSWORD are set)
+if (env.AUTH_USERNAME && env.AUTH_PASSWORD) {
+  app.use((req, res, next) => {
+    const auth = req.headers.authorization;
+    if (auth && auth.startsWith("Basic ")) {
+      const decoded = Buffer.from(auth.slice(6), "base64").toString();
+      const [user, pass] = decoded.split(":");
+      if (user === env.AUTH_USERNAME && pass === env.AUTH_PASSWORD) {
+        return next();
+      }
+    }
+    res.setHeader("WWW-Authenticate", 'Basic realm="TeslaMate Dashboard"');
+    res.status(401).send("Authentication required");
+  });
+}
 
 if (env.DEMO_MODE) {
   // Demo mode: use mock data
@@ -52,7 +69,7 @@ if (env.DEMO_MODE) {
       }
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
       const response = await fetch(url);
-      const data = await response.json();
+      const data = (await response.json()) as { current_weather: unknown };
       res.json(data.current_weather);
     } catch (err) {
       console.error("Error fetching weather:", err);
@@ -66,6 +83,19 @@ if (env.DEMO_MODE) {
     res.json({ status: dbOk ? "ok" : "degraded", database: dbOk });
   });
 }
+
+// Serve frontend static files (production / Docker)
+// In dev, Vite handles this via its proxy
+const frontendDistPath = path.join(__dirname, "../../frontend/dist");
+app.use(express.static(frontendDistPath));
+
+// SPA fallback: non-API routes get index.html for React routing
+app.get("*", (req, res) => {
+  if (req.path.startsWith("/api/")) {
+    return res.status(404).json({ error: "Not found" });
+  }
+  res.sendFile(path.join(frontendDistPath, "index.html"));
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

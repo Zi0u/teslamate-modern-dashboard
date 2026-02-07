@@ -22,7 +22,8 @@ export function CarMap() {
   const { locale, t } = useTranslation();
   const { data: weather } = useWeather(car?.latitude, car?.longitude);
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapInstanceRef = useRef<any>(null);
 
   useEffect(() => {
     if (!car || !car.latitude || !car.longitude || !mapRef.current) return;
@@ -42,7 +43,8 @@ export function CarMap() {
     const initMap = () => {
       if (!mapRef.current || mapInstanceRef.current) return;
 
-      const L = (window as typeof window & { L: typeof import("leaflet") }).L;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const L = (window as any).L;
 
       const map = L.map(mapRef.current, {
         zoomControl: false,

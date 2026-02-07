@@ -1,6 +1,9 @@
 import dotenv from "dotenv";
 
-dotenv.config({ path: "../.env" });
+// Try multiple paths: dotenv silently ignores missing files
+// and never overrides already-set env vars (Docker, CI, etc.)
+dotenv.config({ path: "../.env" });  // dev: CWD = backend/
+dotenv.config({ path: ".env" });     // Docker or root CWD
 
 export const env = {
   DATABASE_HOST: process.env.DATABASE_HOST || "localhost",
@@ -10,4 +13,6 @@ export const env = {
   DATABASE_PASSWORD: process.env.DATABASE_PASSWORD || "",
   PORT: parseInt(process.env.PORT || "3001"),
   DEMO_MODE: process.env.DEMO_MODE === "true",
+  AUTH_USERNAME: process.env.AUTH_USERNAME || "",
+  AUTH_PASSWORD: process.env.AUTH_PASSWORD || "",
 };
