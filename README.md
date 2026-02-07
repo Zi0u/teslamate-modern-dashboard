@@ -4,6 +4,8 @@ A modern, responsive web dashboard for [TeslaMate](https://github.com/teslamate-
 
 Connects read-only to your existing TeslaMate PostgreSQL database. No modifications, no extra setup.
 
+![Dashboard Screenshot](screenshot.png)
+
 ## Features
 
 - **Live vehicle status** — battery level, firmware version, state (online/driving/charging/asleep)
@@ -38,7 +40,7 @@ This serves mock data on `http://localhost:5173` — no database required.
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/teslamate-modern-dashboard.git
+git clone https://github.com/Zi0u/teslamate-modern-dashboard.git
 cd teslamate-modern-dashboard
 
 # Install dependencies
