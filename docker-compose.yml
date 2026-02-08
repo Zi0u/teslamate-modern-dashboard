@@ -2,15 +2,15 @@ services:
   teslamate-modern-dashboard:
     build: .
     image: teslamate-modern-dashboard
-    restart: unless-stopped
+    restart: always
     ports:
       - "3001:3001"
     environment:
       - DATABASE_HOST=database
       - DATABASE_PORT=5432
-      - DATABASE_NAME=teslamate
-      - DATABASE_USER=teslamate_readonly
-      - DATABASE_PASSWORD=readonly_password
+      - TM_DB_NAME=${TM_DB_NAME}
+      - TM_DB_USER=${TM_DB_USER}
+      - TM_DB_PASS=${TM_DB_PASS}
       - PORT=3001
       # Optional: protect the dashboard with a login/password
       # - AUTH_USERNAME=admin

@@ -10,6 +10,18 @@ Connects read-only to your existing TeslaMate PostgreSQL database. No modificati
 
 ![Dashboard Screenshot](screenshot.png)
 
+## Demo Mode
+
+Try the dashboard without a TeslaMate instance: **[Live Demo](https://teslamate-modern-dashboard.onrender.com/)**
+
+Or run it locally:
+
+```bash
+npm run demo
+```
+
+This serves mock data on `http://localhost:5173` — no database required.
+
 ## Features
 
 - **Live vehicle status** — battery level, firmware version, state (online/driving/charging/asleep)
@@ -24,40 +36,86 @@ Connects read-only to your existing TeslaMate PostgreSQL database. No modificati
 - **Bilingual** — French & English with one-click toggle
 - **Dark mode** — always on, easy on the eyes
 
-## Demo Mode
+## Security Notice
 
-Try the dashboard without a TeslaMate instance: **[Live Demo](https://teslamate-modern-dashboard.onrender.com/)**
+The built-in HTTP Basic Auth (`AUTH_USERNAME` / `AUTH_PASSWORD`) is suitable for **local network** use. If you expose the dashboard to the internet, use a **reverse proxy with HTTPS** (e.g. [Traefik](https://docs.teslamate.org/docs/advanced_guides/traefik), nginx) to encrypt traffic. Without HTTPS, credentials are sent in Base64 (not encrypted) and can be intercepted.
 
-Or run it locally:
+## Docker (recommended)
+
+The easiest way to deploy if you already run TeslaMate in Docker.
+
+### Add to your existing TeslaMate stack
+
+Clone the repository on your TeslaMate server and add this service to your TeslaMate `docker-compose.yml`:
 
 ```bash
-npm run demo
+git clone https://github.com/Zi0u/teslamate-modern-dashboard.git
 ```
 
-This serves mock data on `http://localhost:5173` — no database required.
+```yaml
+  teslamate-modern-dashboard:
+    build:
+      context: ./teslamate-modern-dashboard
+    image: teslamate-modern-dashboard
+    restart: always
+    depends_on:
+      - database
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_PORT=5432
+      - TM_DB_NAME=${TM_DB_NAME}
+      - TM_DB_USER=${TM_DB_USER}
+      - TM_DB_PASS=${TM_DB_PASS}
+      - PORT=3001
+      # Optional: protect the dashboard with a login/password
+      # - AUTH_USERNAME=admin
+      # - AUTH_PASSWORD=your_password_here
+```
 
-## Prerequisites
+Then run `docker compose up -d`. The dashboard will be available at `http://your-server:3001`.
 
-- **Node.js** 18+
-- **TeslaMate** with a running PostgreSQL database
-- A read-only database user (recommended)
+> The `TM_DB_*` variables are already defined in your TeslaMate `.env` file — no extra configuration needed.
 
-## Installation
+### Standalone deployment
+
+If you prefer to run the dashboard separately from TeslaMate:
 
 ```bash
-# Clone the repository
 git clone https://github.com/Zi0u/teslamate-modern-dashboard.git
 cd teslamate-modern-dashboard
 
-# Install dependencies
+# Edit docker-compose.yml with your database credentials, then:
+docker compose up -d
+```
+
+### Demo mode with Docker
+
+```bash
+docker build -t teslamate-modern-dashboard .
+docker run --rm -p 3001:3001 -e DEMO_MODE=true teslamate-modern-dashboard
+```
+
+## Manual Installation
+
+### Prerequisites
+
+- **Node.js** 18+
+- **TeslaMate** with a running PostgreSQL database
+
+### Installation
+
+```bash
+git clone https://github.com/Zi0u/teslamate-modern-dashboard.git
+cd teslamate-modern-dashboard
 npm install
 
-# Configure environment
 cp .env.example .env
 # Edit .env with your TeslaMate database credentials
 ```
 
-## Configuration
+### Configuration
 
 Edit the `.env` file at the project root:
 
@@ -65,12 +123,14 @@ Edit the `.env` file at the project root:
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
 DATABASE_NAME=teslamate
-DATABASE_USER=teslamate_readonly
+DATABASE_USER=teslamate
 DATABASE_PASSWORD=your_password_here
 PORT=3001
 ```
 
-### Creating a read-only database user (recommended)
+### Creating a read-only database user (optional)
+
+The dashboard only reads data, so you can optionally use a dedicated read-only user instead of the main TeslaMate credentials:
 
 ```sql
 CREATE USER teslamate_readonly WITH PASSWORD 'your_password_here';
@@ -80,7 +140,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO teslamate_readonly;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO teslamate_readonly;
 ```
 
-## Usage
+### Usage
 
 ```bash
 # Development (backend + frontend with hot reload)
@@ -95,51 +155,9 @@ npm run build
 
 The dashboard will be available at `http://localhost:5173` (dev) with the API on port `3001`.
 
-## Docker
+## Known Issues
 
-The easiest way to deploy if you already run TeslaMate in Docker.
-
-### Quick start
-
-```bash
-git clone https://github.com/Zi0u/teslamate-modern-dashboard.git
-cd teslamate-modern-dashboard
-
-# Edit docker-compose.yml with your database credentials, then:
-docker compose up -d
-```
-
-The dashboard will be available at `http://your-server:3001`.
-
-### Add to your existing TeslaMate stack
-
-Add this service to your TeslaMate `docker-compose.yml`:
-
-```yaml
-  teslamate-modern-dashboard:
-    build:
-      context: ./teslamate-modern-dashboard
-    image: teslamate-modern-dashboard
-    restart: unless-stopped
-    depends_on:
-      - database
-    ports:
-      - "3001:3001"
-    environment:
-      - DATABASE_HOST=database
-      - DATABASE_PORT=5432
-      - DATABASE_NAME=teslamate
-      - DATABASE_USER=teslamate_readonly
-      - DATABASE_PASSWORD=your_password_here
-      - PORT=3001
-```
-
-### Demo mode with Docker
-
-```bash
-docker build -t teslamate-modern-dashboard .
-docker run --rm -p 3001:3001 -e DEMO_MODE=true teslamate-modern-dashboard
-```
+- **Mobile layout** — The dashboard is currently optimized for desktop. Mobile responsiveness improvements are planned.
 
 ## Tech Stack
 
