@@ -1,8 +1,12 @@
 # TeslaMate Modern Dashboard
 
+[![Node.js](https://img.shields.io/badge/Node.js-20-green?logo=node.js)](https://nodejs.org/) [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/) [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev/) [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker)](Dockerfile) [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE) [![Live Demo](https://img.shields.io/badge/Live_Demo-online-success?logo=render)](https://teslamate-modern-dashboard.onrender.com/)
+
 A modern, responsive web dashboard for [TeslaMate](https://github.com/teslamate-org/teslamate) — the self-hosted Tesla data logger.
 
 Connects read-only to your existing TeslaMate PostgreSQL database. No modifications, no extra setup.
+
+**[Live Demo (mock data)](https://teslamate-modern-dashboard.onrender.com/)**
 
 ![Dashboard Screenshot](screenshot.png)
 
@@ -22,7 +26,9 @@ Connects read-only to your existing TeslaMate PostgreSQL database. No modificati
 
 ## Demo Mode
 
-Try the dashboard without a TeslaMate instance:
+Try the dashboard without a TeslaMate instance: **[Live Demo](https://teslamate-modern-dashboard.onrender.com/)**
+
+Or run it locally:
 
 ```bash
 npm run demo
