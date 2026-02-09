@@ -155,10 +155,6 @@ npm run build
 
 The dashboard will be available at `http://localhost:5173` (dev) with the API on port `3001`.
 
-## Known Issues
-
-- **Mobile layout** — The dashboard is currently optimized for desktop. Mobile responsiveness improvements are planned.
-
 ## Tech Stack
 
 - **Frontend**: React 18 + Vite + Tailwind CSS + Recharts + React Query

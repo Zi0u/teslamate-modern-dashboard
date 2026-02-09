@@ -74,7 +74,7 @@ export function RecentDrives() {
             {t("drives.noData")}
           </p>
         ) : (
-          <div className="relative">
+          <div className="relative max-h-[250px] sm:max-h-none overflow-y-auto">
             {/* Main timeline line */}
             <div className="absolute left-[23px] top-3 bottom-3 w-px border-l border-dashed border-muted-foreground/30" />
 

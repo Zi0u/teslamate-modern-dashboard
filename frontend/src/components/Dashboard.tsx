@@ -17,7 +17,7 @@ import { GrafanaNav } from "./GrafanaNav";
 import type { TranslationKey } from "../i18n/translations";
 
 const pillStyle =
-  "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium text-muted-foreground";
+  "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap";
 
 const stateVariants: Record<string, "success" | "secondary" | "info" | "warning" | "destructive"> = {
   online: "success",
@@ -99,13 +99,13 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
-        <div className="px-4 py-4 sm:px-6 flex items-center justify-between gap-4">
-          {/* Left: title + car name/status as subtitle */}
-          <div className="min-w-0 shrink-0">
-            <h1 className="text-xl font-bold tracking-tight">
+        <div className="px-4 py-4 sm:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          {/* Top row on mobile / Left on desktop: title + car info */}
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight">
               TeslaMate Modern Dashboard
             </h1>
-            <div className="flex items-center gap-2 mt-0.5">
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               {isLoading ? (
                 <Skeleton className="h-5 w-32" />
               ) : car ? (
@@ -132,9 +132,8 @@ export function Dashboard() {
             </div>
           </div>
 
-          {/* Right: pills row */}
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="flex items-center gap-2 overflow-x-auto">
+          {/* Bottom row on mobile / Right on desktop: all pills scrollable together */}
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
             {isLoading ? (
               <>
                 <Skeleton className="h-9 w-24 rounded-lg" />
@@ -173,8 +172,6 @@ export function Dashboard() {
                 )}
               </>
             ) : null}
-
-            </div>
 
             {/* Language toggle */}
             <Tooltip label={t("tooltip.language")}>
@@ -234,7 +231,7 @@ export function Dashboard() {
 
           {/* Columns 2-3: Battery health + Last charge (top), Battery chart with tabs (bottom) */}
           <div className="md:col-span-2 space-y-6">
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <BatteryHealthGauge />
               <LastChargeCard />
             </div>
