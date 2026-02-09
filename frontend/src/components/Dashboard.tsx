@@ -116,6 +116,17 @@ export function Dashboard() {
                   <Badge variant={stateVariant} className="text-xs">
                     {stateLabel}
                   </Badge>
+                  {car.demo_mode && (
+                    <a
+                      href="https://github.com/Zi0u/teslamate-modern-dashboard#teslamate-modern-dashboard"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground no-underline"
+                    >
+                      <img src="/logo-github.png" alt="GitHub" className="h-3.5 w-3.5 rounded-sm bg-white p-[1px]" />
+                      {t("demo.install")}
+                    </a>
+                  )}
                 </>
               ) : null}
             </div>

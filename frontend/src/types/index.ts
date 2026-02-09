@@ -13,6 +13,7 @@ export interface CarStatus {
   longitude: number;
   last_update: string;
   firmware_version: string | null;
+  demo_mode?: boolean;
 }
 
 export interface MonthlyStats {

@@ -89,6 +89,9 @@ export const translations = {
     "tooltip.geofences": "Geo-fences",
     "tooltip.settings": "R\u00e9glages",
     "tooltip.help": "Aide",
+
+    // Demo mode
+    "demo.install": "Voir sur GitHub",
   },
   en: {
     // Header
@@ -180,6 +183,9 @@ export const translations = {
     "tooltip.geofences": "Geo-fences",
     "tooltip.settings": "Settings",
     "tooltip.help": "Help",
+
+    // Demo mode
+    "demo.install": "View on GitHub",
   },
 } as const;
 

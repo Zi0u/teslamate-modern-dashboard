@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://teslamate-modern-dashboard.onrender.com/sitemap.xml

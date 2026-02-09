@@ -19,6 +19,7 @@ router.get("/car/status", (_req: Request, res: Response) => {
   res.json({
     ...demoCar,
     last_update: new Date().toISOString(),
+    demo_mode: true,
   });
 });
 
