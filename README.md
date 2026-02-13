@@ -46,11 +46,15 @@ The easiest way to deploy if you already run TeslaMate in Docker.
 
 ### Add to your existing TeslaMate stack
 
-Clone the repository on your TeslaMate server and add this service to your TeslaMate `docker-compose.yml`:
+Clone the repository on your TeslaMate server:
 
 ```bash
 git clone https://github.com/Zi0u/teslamate-modern-dashboard.git
 ```
+
+Then add this service to your TeslaMate `docker-compose.yml`.
+
+**If you use a `.env` file** (typical with [Traefik](https://docs.teslamate.org/docs/advanced_guides/traefik) setup):
 
 ```yaml
   teslamate-modern-dashboard:
@@ -65,9 +69,37 @@ git clone https://github.com/Zi0u/teslamate-modern-dashboard.git
     environment:
       - DATABASE_HOST=database
       - DATABASE_PORT=5432
-      - TM_DB_NAME=${TM_DB_NAME}
-      - TM_DB_USER=${TM_DB_USER}
-      - TM_DB_PASS=${TM_DB_PASS}
+      - DATABASE_NAME=${TM_DB_NAME}
+      - DATABASE_USER=${TM_DB_USER}
+      - DATABASE_PASSWORD=${TM_DB_PASS}
+      - PORT=3001
+      # Optional: protect the dashboard with a login/password
+      # - AUTH_USERNAME=admin
+      # - AUTH_PASSWORD=your_password_here
+```
+
+> The `TM_DB_*` variables are already defined in your TeslaMate `.env` file — no extra configuration needed.
+
+**If you don't use a `.env` file** (credentials hardcoded in your `docker-compose.yml`):
+
+Look for the `database` service in your existing `docker-compose.yml` to find your `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` values, then use them directly:
+
+```yaml
+  teslamate-modern-dashboard:
+    build:
+      context: ./teslamate-modern-dashboard
+    image: teslamate-modern-dashboard
+    restart: always
+    depends_on:
+      - database
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=teslamate       # same as POSTGRES_DB
+      - DATABASE_USER=teslamate       # same as POSTGRES_USER
+      - DATABASE_PASSWORD=secret      # same as POSTGRES_PASSWORD
       - PORT=3001
       # Optional: protect the dashboard with a login/password
       # - AUTH_USERNAME=admin
@@ -75,8 +107,6 @@ git clone https://github.com/Zi0u/teslamate-modern-dashboard.git
 ```
 
 Then run `docker compose up -d`. The dashboard will be available at `http://your-server:3001`.
-
-> The `TM_DB_*` variables are already defined in your TeslaMate `.env` file — no extra configuration needed.
 
 ### Standalone deployment
 
