@@ -4,9 +4,25 @@ import { CarStatus } from "../types";
 
 const router = Router();
 
-router.get("/status", async (_req: Request, res: Response) => {
+router.get("/list", async (_req: Request, res: Response) => {
   try {
-    const result = await pool.query<CarStatus>(`
+    const result = await pool.query(
+      `SELECT id, name, model, marketing_name FROM cars ORDER BY id`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching cars:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/status", async (req: Request, res: Response) => {
+  const carId = parseInt(req.query.car_id as string) || null;
+  try {
+    const whereClause = carId ? "WHERE c.id = $1" : "";
+    const params = carId ? [carId] : [];
+    const result = await pool.query<CarStatus>(
+      `
       SELECT
         c.id,
         c.name,
@@ -43,9 +59,12 @@ router.get("/status", async (_req: Request, res: Response) => {
         ORDER BY start_date DESC
         LIMIT 1
       ) u ON true
+      ${whereClause}
       ORDER BY c.id
       LIMIT 1
-    `);
+    `,
+      params
+    );
 
     if (result.rows.length === 0) {
       res.status(404).json({ error: "No car found" });

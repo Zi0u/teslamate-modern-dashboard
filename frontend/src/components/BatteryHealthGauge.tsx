@@ -61,8 +61,8 @@ function GaugeArc({ pct }: { pct: number }) {
   );
 }
 
-export function BatteryHealthGauge() {
-  const { data, isLoading, error } = useBatteryHealth();
+export function BatteryHealthGauge({ carId = 1 }: { carId?: number }) {
+  const { data, isLoading, error } = useBatteryHealth(carId);
   const { locale, t } = useTranslation();
 
   const numLocale = locale === "fr" ? "fr-FR" : "en-GB";

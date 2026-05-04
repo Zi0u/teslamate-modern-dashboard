@@ -10,8 +10,8 @@ function intensityColor(count: number) {
   return "bg-emerald-500/70";
 }
 
-export function DriveHeatmap() {
-  const { data, isLoading, error } = useDriveActivity();
+export function DriveHeatmap({ carId = 1 }: { carId?: number }) {
+  const { data, isLoading, error } = useDriveActivity(15, carId);
   const { locale, t } = useTranslation();
 
   const dateLocale = locale === "fr" ? "fr-FR" : "en-GB";

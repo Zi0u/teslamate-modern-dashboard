@@ -21,8 +21,8 @@ function shortenAddress(address: string | null) {
   return result.length > 22 ? result.slice(0, 22) + "..." : result;
 }
 
-export function RecentDrives() {
-  const { data, isLoading, error } = useRecentDrives(10);
+export function RecentDrives({ carId = 1 }: { carId?: number }) {
+  const { data, isLoading, error } = useRecentDrives(10, carId);
   const { locale, t } = useTranslation();
 
   const dateLocale = locale === "fr" ? "fr-FR" : "en-GB";

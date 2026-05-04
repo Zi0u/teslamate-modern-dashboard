@@ -84,10 +84,10 @@ function ConsumptionTooltip({ active, payload, label, dateLocale, consumptionLab
   );
 }
 
-export function BatteryChart() {
+export function BatteryChart({ carId = 1 }: { carId?: number }) {
   const [tab, setTab] = useState<Tab>("battery");
-  const { data: batteryData, isLoading: batteryLoading } = useBatteryHistory();
-  const { data: consumptionData, isLoading: consumptionLoading } = useConsumptionHistory();
+  const { data: batteryData, isLoading: batteryLoading } = useBatteryHistory(7, carId);
+  const { data: consumptionData, isLoading: consumptionLoading } = useConsumptionHistory(7, carId);
   const { locale, t } = useTranslation();
 
   const dateLocale = locale === "fr" ? "fr-FR" : "en-GB";

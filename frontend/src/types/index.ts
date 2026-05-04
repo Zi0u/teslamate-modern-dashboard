@@ -1,3 +1,10 @@
+export interface CarSummary {
+  id: number;
+  name: string | null;
+  model: string | null;
+  marketing_name: string | null;
+}
+
 export interface CarStatus {
   id: number;
   name: string | null;

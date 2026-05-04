@@ -1,5 +1,5 @@
 // Demo data for showcase purposes
-// Simulates a Tesla Model 3 SR+ with realistic French data
+// Simulates a Tesla Model 3 SR+ and a Model Y LR with realistic French data
 
 export const demoCar = {
   id: 1,
@@ -17,6 +17,28 @@ export const demoCar = {
   last_update: new Date().toISOString(),
   firmware_version: "2026.2.3",
 };
+
+export const demoCar2 = {
+  id: 2,
+  name: "Family Tesla",
+  model: "Y",
+  marketing_name: "Long Range",
+  battery_level: 13,
+  ideal_battery_range_km: 116,
+  rated_battery_range_km: 110,
+  est_battery_range_km: 106,
+  odometer: 28750,
+  state: "asleep",
+  latitude: 48.852,
+  longitude: 2.349,
+  last_update: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+  firmware_version: "2026.2.3",
+};
+
+export const demoCars = [
+  { id: 1, name: demoCar.name, model: demoCar.model, marketing_name: demoCar.marketing_name },
+  { id: 2, name: demoCar2.name, model: demoCar2.model, marketing_name: demoCar2.marketing_name },
+];
 
 export const demoStats = {
   week: {
@@ -223,3 +245,187 @@ const generateConsumptionHistory = () => {
 };
 
 export const demoConsumptionHistory = generateConsumptionHistory();
+
+// --- Car 2 specific data ---
+
+export const demoCar2Stats = {
+  week: {
+    total_distance_km: "94.20",
+    drive_count: "6",
+    total_energy_kwh: "16.30",
+    avg_consumption_kwh_per_100km: "17.3",
+    total_cost: "4.08",
+    charge_count: "1",
+  },
+  month: {
+    total_distance_km: "412.50",
+    drive_count: "22",
+    total_energy_kwh: "72.40",
+    avg_consumption_kwh_per_100km: "17.5",
+    total_cost: "18.10",
+    charge_count: "4",
+  },
+  last_month: {
+    total_distance_km: "638.80",
+    drive_count: "34",
+    total_energy_kwh: "110.20",
+    avg_consumption_kwh_per_100km: "17.3",
+    total_cost: "27.55",
+    charge_count: "6",
+  },
+};
+
+export const demoCar2BatteryHealth = {
+  original_range_km: "533.0",
+  current_range_km: "524.8",
+  battery_health_pct: "98.5",
+  degradation_pct: "1.5",
+};
+
+export const demoCar2LastCharge = {
+  start_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  end_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000).toISOString(),
+  charge_energy_added: "52.10",
+  charge_energy_used: "54.00",
+  start_battery_level: 15,
+  end_battery_level: 90,
+  duration_min: 480,
+  cost: "13.03",
+  start_rated_range_km: "70.40",
+  end_rated_range_km: "421.80",
+  address: "Superchargeur Tesla, Vélizy, France",
+};
+
+const generateCar2Drives = () => {
+  const addresses = [
+    { name: "Place de la Défense", city: "La Défense" },
+    { name: "Avenue du Général de Gaulle", city: "Rueil-Malmaison" },
+    { name: "Boulevard de la République", city: "Versailles" },
+    { name: "Avenue de Paris", city: "Versailles" },
+    { name: "Rue du Commerce", city: "Boulogne-Billancourt" },
+    { name: "Avenue du Président Wilson", city: "Saint-Denis" },
+  ];
+
+  const drives = [];
+  let currentDate = new Date();
+  let batteryLevel = 55;
+
+  for (let i = 0; i < 10; i++) {
+    const distance = 8 + Math.random() * 35;
+    const duration = Math.round(distance * 2.2 + Math.random() * 12);
+    const consumption = 16 + Math.random() * 4;
+    const batteryUsed = Math.round(distance * consumption / 100 / 5.2);
+
+    const startAddr = addresses[Math.floor(Math.random() * addresses.length)];
+    const endAddr = addresses[Math.floor(Math.random() * addresses.length)];
+
+    const endDate = new Date(currentDate);
+    const startDate = new Date(currentDate.getTime() - duration * 60 * 1000);
+
+    drives.push({
+      id: 3500 + i,
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
+      distance_km: distance.toFixed(2),
+      duration_min: duration,
+      avg_speed_kmh: ((distance / duration) * 60).toFixed(1),
+      start_address: `${startAddr.name}, ${startAddr.city}, Île-de-France, France`,
+      end_address: `${endAddr.name}, ${endAddr.city}, Île-de-France, France`,
+      start_battery_level: batteryLevel + batteryUsed,
+      end_battery_level: batteryLevel,
+      consumption_kwh: (distance * consumption / 100).toFixed(2),
+      consumption_kwh_per_100km: consumption.toFixed(1),
+    });
+
+    currentDate = new Date(currentDate.getTime() - (3 + Math.random() * 8) * 60 * 60 * 1000);
+    if (currentDate.getHours() < 7) {
+      currentDate.setDate(currentDate.getDate() - 1);
+      currentDate.setHours(17 + Math.floor(Math.random() * 4));
+    }
+    batteryLevel = Math.min(90, batteryLevel + Math.floor(Math.random() * 20));
+  }
+
+  return drives;
+};
+
+export const demoCar2Drives = generateCar2Drives();
+
+const generateCar2BatteryHistory = () => {
+  const history = [];
+  const now = new Date();
+  const levels = [
+    70, 70, 65, 58, 52, 50,
+    62, 75, 75, 68, 60, 55,
+    55, 54, 52, 48, 45, 44,
+    58, 70, 70, 62, 55, 50,
+    65, 65, 62, 57, 51, 49,
+    49, 48, 46, 43, 40, 38,
+    30, 25, 22, 18, 15, 13,
+  ];
+
+  for (let i = 0; i < levels.length; i++) {
+    const day = Math.floor(i / 6);
+    const hour = (i % 6) * 4;
+    const date = new Date(now);
+    date.setDate(date.getDate() - (6 - day));
+    date.setHours(hour, 0, 0, 0);
+
+    history.push({
+      date: date.toISOString(),
+      battery_level: levels[i],
+      ideal_range_km: (levels[i] * 5.2).toFixed(1),
+    });
+  }
+
+  return history;
+};
+
+export const demoCar2BatteryHistory = generateCar2BatteryHistory();
+
+export const demoCar2TopDestinations = [
+  { address: "Place de la Défense, La Défense, Île-de-France, France", visit_count: "18", avg_distance_km: "14.2" },
+  { address: "Boulevard de la République, Versailles, Île-de-France, France", visit_count: "12", avg_distance_km: "22.5" },
+  { address: "Rue du Commerce, Boulogne-Billancourt, Île-de-France, France", visit_count: "8", avg_distance_km: "9.8" },
+];
+
+const generateCar2DriveActivity = () => {
+  const activity = [];
+  const now = new Date();
+  for (let i = 14; i >= 0; i--) {
+    const day = new Date(now);
+    day.setDate(day.getDate() - i);
+    const dayStr = day.toISOString().split("T")[0];
+    if (Math.random() > 0.4) {
+      const count = 1 + Math.floor(Math.random() * 3);
+      activity.push({
+        day: dayStr,
+        drive_count: String(count),
+        total_distance_km: (count * (8 + Math.random() * 20)).toFixed(1),
+      });
+    }
+  }
+  return activity;
+};
+
+export const demoCar2DriveActivity = generateCar2DriveActivity();
+
+const generateCar2ConsumptionHistory = () => {
+  const history = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const day = new Date(now);
+    day.setDate(day.getDate() - i);
+    const dayStr = day.toISOString().split("T")[0];
+    if (Math.random() > 0.25) {
+      history.push({
+        day: dayStr,
+        avg_consumption: (15 + Math.random() * 5).toFixed(1),
+        total_distance_km: (15 + Math.random() * 50).toFixed(1),
+        drive_count: String(1 + Math.floor(Math.random() * 3)),
+      });
+    }
+  }
+  return history;
+};
+
+export const demoCar2ConsumptionHistory = generateCar2ConsumptionHistory();

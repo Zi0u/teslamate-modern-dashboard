@@ -1,7 +1,7 @@
-import { Battery, BatteryLow, BatteryMedium, BatteryFull, EvCharger, Car, Cpu, Languages, HelpCircle, Settings, MapPin } from "lucide-react";
+import { Battery, BatteryLow, BatteryMedium, BatteryFull, EvCharger, Car, Cpu, Languages, HelpCircle, Settings, MapPin, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "../i18n/LanguageContext";
-import { useCarStatus, useGrafanaUrl } from "../hooks/useApi";
+import { useCarStatus, useCars, useGrafanaUrl } from "../hooks/useApi";
 import { Badge } from "./ui/badge";
 import { Skeleton } from "./ui/skeleton";
 import { Tooltip } from "./ui/tooltip";
@@ -87,10 +87,75 @@ function HelpDropdown() {
   );
 }
 
+function CarSelector({ cars, selectedId, onSelect }: {
+  cars: { id: number; name: string | null; model: string | null; marketing_name: string | null }[];
+  selectedId: number;
+  onSelect: (id: number) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selected = cars.find((c) => c.id === selectedId) ?? cars[0];
+  const longestName = cars.reduce((a, c) => {
+    const name = c.name ?? `Model ${c.model}`;
+    return name.length > a.length ? name : a;
+  }, "");
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className={`${pillStyle} transition-colors hover:bg-muted hover:text-foreground`}
+      >
+        <Car className="h-4 w-4" />
+        <span className="relative">
+          <span className="invisible">{longestName}</span>
+          <span className="absolute inset-0">{selected?.name ?? `Model ${selected?.model}`}</span>
+        </span>
+        <ChevronDown className="h-3 w-3 opacity-60" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 min-w-full rounded-lg border bg-card shadow-lg z-50 p-1 space-y-0.5">
+          {cars.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => { onSelect(c.id); setOpen(false); }}
+              className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors text-left
+                ${c.id === selectedId
+                  ? "bg-primary/10 text-foreground font-medium"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                }`}
+            >
+              <Car className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{c.name ?? `Model ${c.model}`}</span>
+              <span className="text-xs opacity-60 shrink-0">M{c.model}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Dashboard() {
   const { locale, toggle, t } = useTranslation();
-  const { data: car, isLoading } = useCarStatus();
+  const { data: cars } = useCars();
+  const [selectedCarId, setSelectedCarId] = useState<number>(1);
+  const { data: car, isLoading } = useCarStatus(selectedCarId);
   const { data: settingsData } = useGrafanaUrl();
+
+  useEffect(() => {
+    if (cars && cars.length > 0 && !cars.find((c) => c.id === selectedCarId)) {
+      setSelectedCarId(cars[0].id);
+    }
+  }, [cars, selectedCarId]);
 
   const stateKey = car ? (`state.${car.state}` as TranslationKey) : undefined;
   const stateLabel = stateKey ? t(stateKey) : "";
@@ -134,6 +199,9 @@ export function Dashboard() {
 
           {/* Bottom row on mobile / Right on desktop: all pills scrollable together */}
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            {cars && cars.length > 1 && (
+              <CarSelector cars={cars} selectedId={selectedCarId} onSelect={setSelectedCarId} />
+            )}
             {isLoading ? (
               <>
                 <Skeleton className="h-9 w-24 rounded-lg" />
@@ -224,24 +292,24 @@ export function Dashboard() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {/* Column 1: Map (with weather) + Stats + Heatmap */}
           <div className="space-y-6">
-            <CarMap />
-            <MonthlyStats />
-            <DriveHeatmap />
+            <CarMap carId={selectedCarId} />
+            <MonthlyStats carId={selectedCarId} />
+            <DriveHeatmap carId={selectedCarId} />
           </div>
 
           {/* Columns 2-3: Battery health + Last charge (top), Battery chart with tabs (bottom) */}
           <div className="md:col-span-2 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <BatteryHealthGauge />
-              <LastChargeCard />
+              <BatteryHealthGauge carId={selectedCarId} />
+              <LastChargeCard carId={selectedCarId} />
             </div>
-            <BatteryChart />
+            <BatteryChart carId={selectedCarId} />
           </div>
 
           {/* Column 4: Recent drives + Top destinations */}
           <div className="space-y-6">
-            <RecentDrives />
-            <TopDestinations />
+            <RecentDrives carId={selectedCarId} />
+            <TopDestinations carId={selectedCarId} />
           </div>
         </div>
       </main>

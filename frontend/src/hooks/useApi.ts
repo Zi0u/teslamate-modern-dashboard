@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type {
+  CarSummary,
   CarStatus,
   MonthlyStats,
   Drive,
@@ -22,10 +23,19 @@ async function fetchJson<T>(url: string): Promise<T> {
   return res.json();
 }
 
-export function useCarStatus() {
+export function useCars() {
+  return useQuery<CarSummary[]>({
+    queryKey: ["car", "list"],
+    queryFn: () => fetchJson("/car/list"),
+    staleTime: Infinity,
+    refetchInterval: false,
+  });
+}
+
+export function useCarStatus(carId?: number) {
   return useQuery<CarStatus>({
-    queryKey: ["car", "status"],
-    queryFn: () => fetchJson("/car/status"),
+    queryKey: ["car", "status", carId],
+    queryFn: () => fetchJson(carId ? `/car/status?car_id=${carId}` : "/car/status"),
     refetchInterval: 30_000,
   });
 }

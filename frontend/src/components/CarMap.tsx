@@ -17,8 +17,8 @@ function weatherIcon(code: number, isDay: boolean) {
   return CloudLightning;
 }
 
-export function CarMap() {
-  const { data: car, isLoading, error } = useCarStatus();
+export function CarMap({ carId = 1 }: { carId?: number }) {
+  const { data: car, isLoading, error } = useCarStatus(carId);
   const { locale, t } = useTranslation();
   const { data: weather } = useWeather(car?.latitude, car?.longitude);
   const mapRef = useRef<HTMLDivElement>(null);

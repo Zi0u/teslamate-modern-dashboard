@@ -29,8 +29,8 @@ function formatTimeAgo(date: Date, t: (key: string) => string): string {
   return ago ? `${ago} ${diffMin}${t("charge.minutesAgo")}` : `${diffMin}${t("charge.minutesAgo")}`;
 }
 
-export function LastChargeCard() {
-  const { data, isLoading, error } = useLastCharge();
+export function LastChargeCard({ carId = 1 }: { carId?: number }) {
+  const { data, isLoading, error } = useLastCharge(carId);
   const { locale, t } = useTranslation();
 
   const numLocale = locale === "fr" ? "fr-FR" : "en-GB";

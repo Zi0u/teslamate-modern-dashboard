@@ -15,8 +15,8 @@ function shortenAddress(address: string) {
 
 const medals = ["text-amber-400", "text-zinc-400", "text-orange-400"];
 
-export function TopDestinations() {
-  const { data, isLoading, error } = useTopDestinations();
+export function TopDestinations({ carId = 1 }: { carId?: number }) {
+  const { data, isLoading, error } = useTopDestinations(3, carId);
   const { t } = useTranslation();
 
   if (isLoading) {

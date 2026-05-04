@@ -7,9 +7,9 @@ import { useTranslation } from "../i18n/LanguageContext";
 
 type Period = "week" | "month" | "last_month";
 
-export function MonthlyStats() {
+export function MonthlyStats({ carId = 1 }: { carId?: number }) {
   const [period, setPeriod] = useState<Period>("month");
-  const { data, isLoading, error } = usePeriodStats(period);
+  const { data, isLoading, error } = usePeriodStats(period, carId);
   const { locale, t } = useTranslation();
 
   const pillBase =

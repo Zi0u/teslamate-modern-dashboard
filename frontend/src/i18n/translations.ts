@@ -90,6 +90,9 @@ export const translations = {
     "tooltip.settings": "R\u00e9glages",
     "tooltip.help": "Aide",
 
+    // Car selector
+    "car.select": "Véhicule",
+
     // Demo mode
     "demo.install": "Voir sur GitHub",
   },
@@ -183,6 +186,9 @@ export const translations = {
     "tooltip.geofences": "Geo-fences",
     "tooltip.settings": "Settings",
     "tooltip.help": "Help",
+
+    // Car selector
+    "car.select": "Vehicle",
 
     // Demo mode
     "demo.install": "View on GitHub",
