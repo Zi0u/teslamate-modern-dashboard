@@ -1,6 +1,6 @@
 # TeslaMate Modern Dashboard
 
-[![Node.js](https://img.shields.io/badge/Node.js-20-green?logo=node.js)](https://nodejs.org/) [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/) [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev/) [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker)](Dockerfile) [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE) [![Live Demo](https://img.shields.io/badge/Live_Demo-online-success?logo=render)](https://teslamate-modern-dashboard.onrender.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-20-green?logo=node.js)](https://nodejs.org/) [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/) [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev/) [![Docker](https://img.shields.io/badge/Docker-martingrn%2Fteslamate--modern--dashboard-2496ED?logo=docker)](https://hub.docker.com/r/martingrn/teslamate-modern-dashboard) [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE) [![Live Demo](https://img.shields.io/badge/Live_Demo-online-success?logo=render)](https://teslamate-modern-dashboard.onrender.com/)
 
 A modern, responsive web dashboard for [TeslaMate](https://github.com/teslamate-org/teslamate) — the self-hosted Tesla data logger.
 
@@ -42,25 +42,21 @@ The built-in HTTP Basic Auth (`AUTH_USERNAME` / `AUTH_PASSWORD`) is suitable for
 
 ## Docker (recommended)
 
-The easiest way to deploy if you already run TeslaMate in Docker.
+The easiest way to deploy. The image is published on Docker Hub — no build required.
+
+```
+martingrn/teslamate-modern-dashboard:latest
+```
 
 ### Add to your existing TeslaMate stack
 
-Clone the repository on your TeslaMate server:
-
-```bash
-git clone https://github.com/Zi0u/teslamate-modern-dashboard.git
-```
-
-Then add this service to your TeslaMate `docker-compose.yml`.
+Add this service directly to your TeslaMate `docker-compose.yml` — no cloning needed.
 
 **If you use a `.env` file** (typical with [Traefik](https://docs.teslamate.org/docs/advanced_guides/traefik) setup):
 
 ```yaml
   teslamate-modern-dashboard:
-    build:
-      context: ./teslamate-modern-dashboard
-    image: teslamate-modern-dashboard
+    image: martingrn/teslamate-modern-dashboard:latest
     restart: always
     depends_on:
       - database
@@ -86,9 +82,7 @@ Look for the `database` service in your existing `docker-compose.yml` to find yo
 
 ```yaml
   teslamate-modern-dashboard:
-    build:
-      context: ./teslamate-modern-dashboard
-    image: teslamate-modern-dashboard
+    image: martingrn/teslamate-modern-dashboard:latest
     restart: always
     depends_on:
       - database
@@ -110,21 +104,30 @@ Then run `docker compose up -d`. The dashboard will be available at `http://your
 
 ### Standalone deployment
 
-If you prefer to run the dashboard separately from TeslaMate:
+If you prefer to run the dashboard separately from TeslaMate, create a `docker-compose.yml`:
 
-```bash
-git clone https://github.com/Zi0u/teslamate-modern-dashboard.git
-cd teslamate-modern-dashboard
-
-# Edit docker-compose.yml with your database credentials, then:
-docker compose up -d
+```yaml
+services:
+  teslamate-modern-dashboard:
+    image: martingrn/teslamate-modern-dashboard:latest
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_HOST=your-db-host
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=teslamate
+      - DATABASE_USER=teslamate
+      - DATABASE_PASSWORD=your_password_here
+      - PORT=3001
 ```
+
+Then run `docker compose up -d`.
 
 ### Demo mode with Docker
 
 ```bash
-docker build -t teslamate-modern-dashboard .
-docker run --rm -p 3001:3001 -e DEMO_MODE=true teslamate-modern-dashboard
+docker run --rm -p 3001:3001 -e DEMO_MODE=true martingrn/teslamate-modern-dashboard:latest
 ```
 
 ## Manual Installation
