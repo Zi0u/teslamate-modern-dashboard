@@ -4,6 +4,7 @@ import { useTranslation } from "../i18n/LanguageContext";
 import { useCarStatus, useCars, useGrafanaUrl } from "../hooks/useApi";
 import { Badge } from "./ui/badge";
 import { Skeleton } from "./ui/skeleton";
+import { Card, CardContent, CardHeader } from "./ui/card";
 import { Tooltip } from "./ui/tooltip";
 import { CarMap } from "./CarMap";
 import { MonthlyStats } from "./MonthlyStats";
@@ -13,6 +14,7 @@ import { TopDestinations } from "./TopDestinations";
 import { BatteryChart } from "./BatteryChart";
 import { BatteryHealthGauge } from "./BatteryHealthGauge";
 import { LastChargeCard } from "./LastChargeCard";
+import { CurrentChargeCard } from "./CurrentChargeCard";
 import { GrafanaNav } from "./GrafanaNav";
 import type { TranslationKey } from "../i18n/translations";
 
@@ -81,6 +83,10 @@ function HelpDropdown() {
             Documentation
             <img src="/logo_doc.svg" alt="Docs" className="h-4 w-4" />
           </a>
+          <div className="border-t mt-1 pt-1.5 px-3 pb-1 text-right text-[10px] leading-tight text-muted-foreground/70">
+            <div>v{__APP_VERSION__}</div>
+            <div>{__BUILD_DATE__.slice(0, 16).replace("T", " ")} UTC</div>
+          </div>
         </div>
       )}
     </div>
@@ -301,7 +307,20 @@ export function Dashboard() {
           <div className="md:col-span-2 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <BatteryHealthGauge carId={selectedCarId} />
-              <LastChargeCard carId={selectedCarId} />
+              {isLoading || !car ? (
+                <Card>
+                  <CardHeader>
+                    <Skeleton className="h-5 w-32" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-32 w-full" />
+                  </CardContent>
+                </Card>
+              ) : car.state === "charging" ? (
+                <CurrentChargeCard carId={selectedCarId} />
+              ) : (
+                <LastChargeCard carId={selectedCarId} />
+              )}
             </div>
             <BatteryChart carId={selectedCarId} />
           </div>

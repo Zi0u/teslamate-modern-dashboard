@@ -67,6 +67,17 @@ export interface LastCharge {
   address: string | null;
 }
 
+export interface CurrentCharge {
+  start_date: string;
+  charge_energy_added: number;
+  charger_power: number;
+  battery_level: number;
+  ideal_battery_range_km: number;
+  rated_battery_range_km: number;
+  outside_temp: number | null;
+  inside_temp: number | null;
+}
+
 export interface BatteryHealth {
   original_range_km: number;
   current_range_km: number;

@@ -53,6 +53,17 @@ export const translations = {
     "charge.range": "Autonomie gagn\u00e9e",
     "charge.loadError": "Donn\u00e9es indisponibles",
 
+    // Charge in progress
+    "charging.title": "Charge en cours",
+    "charging.since": "En charge depuis",
+    "charging.level": "Niveau",
+    "charging.added": "Charg\u00e9e",
+    "charging.power": "Puissance",
+    "charging.range": "Autonomie",
+    "charging.temps": "Temp\u00e9ratures",
+    "charging.tempOutShort": "ext.",
+    "charging.tempInShort": "hab.",
+
     // RecentDrives
     "drives.title": "Les 10 derniers trajets",
     "drives.noData": "Aucun trajet",
@@ -149,6 +160,17 @@ export const translations = {
     "charge.cost": "Cost",
     "charge.range": "Range gained",
     "charge.loadError": "Data unavailable",
+
+    // Charge in progress
+    "charging.title": "Charging",
+    "charging.since": "Charging for",
+    "charging.level": "Level",
+    "charging.added": "Added",
+    "charging.power": "Power",
+    "charging.range": "Range",
+    "charging.temps": "Temperatures",
+    "charging.tempOutShort": "out",
+    "charging.tempInShort": "in",
 
     // RecentDrives
     "drives.title": "Last 10 drives",

@@ -9,6 +9,7 @@ import {
   demoCar2BatteryHealth,
   demoLastCharge,
   demoCar2LastCharge,
+  demoCar2CurrentCharge,
   demoDrives,
   demoCar2Drives,
   demoBatteryHistory,
@@ -65,6 +66,15 @@ router.get("/battery/history", (req: Request, res: Response) => {
 // Last charge
 router.get("/charges/last", (req: Request, res: Response) => {
   res.json(carId(req) === 2 ? demoCar2LastCharge : demoLastCharge);
+});
+
+// Current charge (car 2 is charging in demo; car 1 is not)
+router.get("/charges/current", (req: Request, res: Response) => {
+  if (carId(req) === 2) {
+    res.json(demoCar2CurrentCharge);
+  } else {
+    res.status(404).json({ error: "Not charging" });
+  }
 });
 
 // Battery health

@@ -28,11 +28,22 @@ export const demoCar2 = {
   rated_battery_range_km: 110,
   est_battery_range_km: 106,
   odometer: 28750,
-  state: "asleep",
+  state: "charging",
   latitude: 48.852,
   longitude: 2.349,
-  last_update: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+  last_update: new Date().toISOString(),
   firmware_version: "2026.2.3",
+};
+
+export const demoCar2CurrentCharge = {
+  start_date: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
+  charge_energy_added: "2.45",
+  charger_power: 11,
+  battery_level: 13,
+  ideal_battery_range_km: "116",
+  rated_battery_range_km: "110",
+  outside_temp: "18.5",
+  inside_temp: "21.0",
 };
 
 export const demoCars = [

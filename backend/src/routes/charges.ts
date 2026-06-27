@@ -42,6 +42,60 @@ router.get("/last", async (req: Request, res: Response) => {
   }
 });
 
+// Live stats for the charge in progress (open charging_process).
+// Returns 404 when the car is not actively charging.
+router.get("/current", async (req: Request, res: Response) => {
+  try {
+    const carId = parseInt(req.query.car_id as string) || 1;
+
+    const result = await pool.query(
+      `
+      SELECT
+        -- TeslaMate stores timestamps in UTC in a "timestamp without time zone"
+        -- column; declare it UTC so the pg driver doesn't shift it to local time.
+        cp.start_date AT TIME ZONE 'UTC' AS start_date,
+        ch.charge_energy_added,
+        ch.charger_power,
+        ch.battery_level,
+        ch.ideal_battery_range_km,
+        ch.rated_battery_range_km,
+        ch.outside_temp,
+        pos.inside_temp
+      FROM charging_processes cp
+      LEFT JOIN LATERAL (
+        SELECT charge_energy_added, charger_power, battery_level,
+               ideal_battery_range_km, rated_battery_range_km, outside_temp
+        FROM charges
+        WHERE charging_process_id = cp.id
+        ORDER BY date DESC
+        LIMIT 1
+      ) ch ON true
+      LEFT JOIN LATERAL (
+        SELECT inside_temp
+        FROM positions
+        WHERE car_id = cp.car_id
+        ORDER BY date DESC
+        LIMIT 1
+      ) pos ON true
+      WHERE cp.car_id = $1 AND cp.end_date IS NULL
+      ORDER BY cp.start_date DESC
+      LIMIT 1
+      `,
+      [carId]
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({ error: "Not charging" });
+      return;
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error fetching current charge:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.get("/battery-health", async (req: Request, res: Response) => {
   try {
     const carId = parseInt(req.query.car_id as string) || 1;

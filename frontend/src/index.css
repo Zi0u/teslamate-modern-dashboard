@@ -29,3 +29,9 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* Shimmer sweep for the active charging progress bar */
+@keyframes charge-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}

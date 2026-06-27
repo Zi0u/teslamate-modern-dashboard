@@ -6,6 +6,7 @@ import type {
   Drive,
   BatteryHistoryPoint,
   LastCharge,
+  CurrentCharge,
   BatteryHealth,
   TopDestination,
   DriveActivity,
@@ -69,6 +70,16 @@ export function useLastCharge(carId = 1) {
     queryKey: ["charges", "last", carId],
     queryFn: () => fetchJson(`/charges/last?car_id=${carId}`),
     refetchInterval: 300_000,
+  });
+}
+
+export function useCurrentCharge(carId = 1, enabled = true) {
+  return useQuery<CurrentCharge>({
+    queryKey: ["charges", "current", carId],
+    queryFn: () => fetchJson(`/charges/current?car_id=${carId}`),
+    enabled,
+    refetchInterval: 30_000,
+    retry: false,
   });
 }
 
