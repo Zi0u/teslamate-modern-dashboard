@@ -1,7 +1,7 @@
 # ============================================
 # Stage 1: Build — compile TypeScript + Vite
 # ============================================
-FROM node:24-alpine AS builder
+FROM node:26-alpine AS builder
 
 WORKDIR /app
 
@@ -26,7 +26,7 @@ RUN npm run build --workspace=frontend
 # ============================================
 # Stage 2: Runtime — lean production image
 # ============================================
-FROM node:24-alpine
+FROM node:26-alpine
 
 # tini: proper init for signal handling when Node runs as PID 1
 RUN apk add --no-cache tini
