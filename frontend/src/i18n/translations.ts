@@ -127,6 +127,7 @@ export const translations = {
     "tooltip.geofences": "Geo-fences",
     "tooltip.settings": "R\u00e9glages",
     "tooltip.help": "Aide",
+    "tooltip.releaseNotes": "Notes de version (Not a Tesla App)",
 
     // Car selector
     "car.select": "Véhicule",
@@ -262,6 +263,7 @@ export const translations = {
     "tooltip.geofences": "Geo-fences",
     "tooltip.settings": "Settings",
     "tooltip.help": "Help",
+    "tooltip.releaseNotes": "Release notes (Not a Tesla App)",
 
     // Car selector
     "car.select": "Vehicle",

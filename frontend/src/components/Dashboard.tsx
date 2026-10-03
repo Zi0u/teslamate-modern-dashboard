@@ -18,8 +18,16 @@ import { CurrentChargeCard } from "./CurrentChargeCard";
 import { GrafanaNav } from "./GrafanaNav";
 import type { TranslationKey } from "../i18n/translations";
 
-const pillStyle =
-  "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap";
+const pillBase = "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium whitespace-nowrap";
+// Clickable header items get a blue tint so they stand out from the read-only info pills
+const interactiveStyle =
+  "border-primary/40 bg-primary/10 text-foreground transition-colors hover:border-primary/70 hover:bg-primary/20";
+// Read-only info (range, battery, odometer)
+const pillStyle = `${pillBase} text-muted-foreground`;
+// Clickable pill (car selector, firmware release notes, language)
+const pillButtonStyle = `${pillBase} ${interactiveStyle}`;
+// Clickable icon-only button (geo-fences, settings, help)
+const iconButtonStyle = `flex h-9 w-9 items-center justify-center rounded-lg border ${interactiveStyle}`;
 
 const stateVariants: Record<string, "success" | "secondary" | "info" | "warning" | "destructive"> = {
   online: "success",
@@ -59,7 +67,7 @@ function HelpDropdown() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-center rounded-lg border h-9 w-9 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className={iconButtonStyle}
       >
         <HelpCircle className="h-4 w-4" />
       </button>
@@ -118,7 +126,7 @@ function CarSelector({ cars, selectedId, onSelect }: {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className={`${pillStyle} transition-colors hover:bg-muted hover:text-foreground`}
+        className={pillButtonStyle}
       >
         <Car className="h-4 w-4" />
         <span className="relative">
@@ -192,7 +200,7 @@ export function Dashboard() {
                       href="https://github.com/Zi0u/teslamate-modern-dashboard#teslamate-modern-dashboard"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground no-underline"
+                      className={`flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-medium no-underline ${interactiveStyle}`}
                     >
                       <img src="/logo-github.png" alt="GitHub" className="h-3.5 w-3.5 rounded-sm bg-white p-[1px]" />
                       {t("demo.install")}
@@ -237,12 +245,22 @@ export function Dashboard() {
                   {Math.round(car.odometer).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB")} km
                 </div>
 
-                {/* Firmware */}
+                {/* Firmware: links to the release notes of this version on Not a Tesla App
+                    (some versions carry a build hash after a space, e.g. "2026.32.3 a1b2c3") */}
                 {car.firmware_version && (
-                  <div className={pillStyle}>
-                    <Cpu className="h-4 w-4" />
-                    {car.firmware_version}
-                  </div>
+                  <Tooltip label={t("tooltip.releaseNotes")}>
+                    <a
+                      href={`https://www.notateslaapp.com/software-updates/version/${encodeURIComponent(
+                        car.firmware_version.trim().split(" ")[0]
+                      )}/release-notes`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={pillButtonStyle}
+                    >
+                      <Cpu className="h-4 w-4" />
+                      {car.firmware_version}
+                    </a>
+                  </Tooltip>
                 )}
               </>
             ) : null}
@@ -251,7 +269,7 @@ export function Dashboard() {
             <Tooltip label={t("tooltip.language")}>
               <button
                 onClick={toggle}
-                className={`${pillStyle} transition-colors hover:bg-muted hover:text-foreground`}
+                className={pillButtonStyle}
               >
                 <Languages className="h-4 w-4" />
                 {locale === "fr" ? "EN" : "FR"}
@@ -265,7 +283,7 @@ export function Dashboard() {
                   href={`${settingsData.base_url}/geo-fences`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center rounded-lg border h-9 w-9 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className={iconButtonStyle}
                 >
                   <MapPin className="h-4 w-4" />
                 </a>
@@ -279,7 +297,7 @@ export function Dashboard() {
                   href={`${settingsData.base_url}/settings`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center rounded-lg border h-9 w-9 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className={iconButtonStyle}
                 >
                   <Settings className="h-4 w-4" />
                 </a>
