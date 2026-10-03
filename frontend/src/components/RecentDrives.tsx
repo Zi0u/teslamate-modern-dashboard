@@ -76,14 +76,14 @@ export function RecentDrives({ carId = 1 }: { carId?: number }) {
         ) : (
           <div className="relative max-h-[250px] sm:max-h-none overflow-y-auto">
             {/* Main timeline line */}
-            <div className="absolute left-[23px] top-3 bottom-3 w-px border-l border-dashed border-muted-foreground/30" />
+            <div className="absolute left-[28px] top-3 bottom-3 w-px border-l border-dashed border-muted-foreground/30" />
 
             <div className="space-y-3">
               {data.map((drive) => (
                 <div key={drive.id} className="relative flex gap-3">
-                  {/* Timeline: date badge */}
-                  <div className="flex items-center shrink-0 z-10">
-                    <span className="text-[10px] font-medium text-muted-foreground bg-muted border px-1.5 py-0.5 rounded whitespace-nowrap">
+                  {/* Timeline: date badge (fixed width so every row lines up, centered on the timeline) */}
+                  <div className="flex w-14 items-center justify-center shrink-0 z-10">
+                    <span className="w-full text-center text-[10px] font-medium text-muted-foreground bg-muted border py-0.5 rounded whitespace-nowrap">
                       {formatDate(drive.start_date)}
                     </span>
                   </div>
@@ -107,16 +107,18 @@ export function RecentDrives({ carId = 1 }: { carId?: number }) {
                       </span>
                     </div>
 
-                    {/* Stats */}
-                    <div className="flex flex-col items-end text-[10px] text-muted-foreground shrink-0">
-                      <span className="flex items-center gap-0.5">
-                        <MapPin className="h-2.5 w-2.5" />
-                        {Number(drive.distance_km).toFixed(1)}
+                    {/* Stats: icons in one column, values right-aligned in the other */}
+                    <div className="grid w-[60px] grid-cols-[auto_1fr] items-center gap-x-1 text-[10px] text-muted-foreground tabular-nums shrink-0">
+                      <MapPin className="h-2.5 w-2.5" />
+                      <span className="text-right">
+                        {Number(drive.distance_km).toLocaleString(dateLocale, {
+                          minimumFractionDigits: 1,
+                          maximumFractionDigits: 1,
+                        })}{" "}
+                        km
                       </span>
-                      <span className="flex items-center gap-0.5">
-                        <Clock className="h-2.5 w-2.5" />
-                        {formatDuration(drive.duration_min)}
-                      </span>
+                      <Clock className="h-2.5 w-2.5" />
+                      <span className="text-right">{formatDuration(drive.duration_min)}</span>
                     </div>
                   </div>
                 </div>
