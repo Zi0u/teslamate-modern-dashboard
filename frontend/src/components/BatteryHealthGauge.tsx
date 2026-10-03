@@ -27,14 +27,15 @@ export function BatteryHealthGauge({ carId = 1 }: { carId?: number }) {
     );
   }
 
-  if (error || !data) {
+  if (error || !data || data.battery_health_pct == null) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>{t("health.title")}</CardTitle>
         </CardHeader>
         <CardContent className="text-center text-muted-foreground text-sm">
-          {t("health.loadError")}
+          {/* No data yet (new car: TeslaMate needs a few charges) vs a real loading error */}
+          {data && data.battery_health_pct == null ? t("health.notEnoughData") : t("health.loadError")}
         </CardContent>
       </Card>
     );

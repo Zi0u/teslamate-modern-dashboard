@@ -65,8 +65,9 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
     {
       icon: Zap,
       label: t("stats.avgConsumption"),
-      value: formatNumber(Number(data.avg_consumption_kwh_per_100km), 1),
-      sub: "kWh/100km",
+      // Unknown until TeslaMate has computed the car's efficiency
+      value: data.avg_consumption_kwh_per_100km == null ? "—" : formatNumber(Number(data.avg_consumption_kwh_per_100km), 1),
+      sub: data.avg_consumption_kwh_per_100km == null ? t("stats.notComputedYet") : "kWh/100km",
     },
     {
       icon: Fuel,

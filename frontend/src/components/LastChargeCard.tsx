@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Zap, Clock, Gauge, MapPin, Settings2, Info, Calculator } from "lucide-react";
+import { Zap, Clock, Gauge, MapPin, Settings2, Info, Calculator, BatteryCharging } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
-import { useFuelPrices, useLastCharge } from "../hooks/useApi";
+import { isNotFound, useFuelPrices, useLastCharge } from "../hooks/useApi";
 import { useTranslation } from "../i18n/LanguageContext";
 
 function formatDuration(minutes: number) {
@@ -51,7 +51,15 @@ export function LastChargeCard({ carId = 1 }: { carId?: number }) {
           <CardTitle>{t("charge.title")}</CardTitle>
         </CardHeader>
         <CardContent className="text-center text-muted-foreground text-sm">
-          {t("charge.loadError")}
+          {isNotFound(error) ? (
+            // New car in TeslaMate: no charge recorded yet
+            <div className="flex flex-col items-center gap-2 py-4">
+              <BatteryCharging className="h-6 w-6 text-muted-foreground/60" />
+              <p>{t("charge.noCharge")}</p>
+            </div>
+          ) : (
+            t("charge.loadError")
+          )}
         </CardContent>
       </Card>
     );

@@ -242,7 +242,7 @@ export function Dashboard() {
                 {/* Range */}
                 <div className={pillStyle}>
                   <EvCharger className="h-4 w-4" />
-                  {Math.round(car.ideal_battery_range_km)} km
+                  {car.ideal_battery_range_km != null ? `${Math.round(car.ideal_battery_range_km)} km` : "—"}
                 </div>
 
                 {/* Battery */}

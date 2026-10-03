@@ -30,10 +30,10 @@ router.get("/status", async (req: Request, res: Response) => {
         c.marketing_name,
         -- During an active charge, the freshest battery level/range lives in
         -- the charges table (positions lags while the car sits still charging).
-        COALESCE(CASE WHEN cp.charger_power > 0 THEN cp.battery_level END, p.battery_level) AS battery_level,
-        COALESCE(CASE WHEN cp.charger_power > 0 THEN cp.ideal_battery_range_km END, p.ideal_battery_range_km) AS ideal_battery_range_km,
-        p.rated_battery_range_km,
-        p.est_battery_range_km,
+        COALESCE(CASE WHEN cp.charger_power > 0 THEN cp.battery_level END, p.battery_level, pr.battery_level) AS battery_level,
+        COALESCE(CASE WHEN cp.charger_power > 0 THEN cp.ideal_battery_range_km END, pr.ideal_battery_range_km) AS ideal_battery_range_km,
+        pr.rated_battery_range_km,
+        pr.est_battery_range_km,
         p.odometer,
         p.latitude,
         p.longitude,
@@ -43,7 +43,9 @@ router.get("/status", async (req: Request, res: Response) => {
         -- power, and "driving" from an open drive.
         CASE
           WHEN cp.charger_power > 0 THEN 'charging'
-          WHEN dr.id IS NOT NULL THEN 'driving'
+          -- An open drive only counts if the car reported a position recently: TeslaMate can
+          -- leave a drive unclosed after a crash, which would show "driving" forever
+          WHEN dr.id IS NOT NULL AND p.date > (NOW() AT TIME ZONE 'UTC') - interval '15 minutes' THEN 'driving'
           ELSE s.state::text
         END AS state,
         u.version AS firmware_version
@@ -56,6 +58,15 @@ router.get("/status", async (req: Request, res: Response) => {
         ORDER BY date DESC
         LIMIT 1
       ) p ON true
+      -- While driving, TeslaMate's streamed positions carry no range: take the range
+      -- from the latest position that has one (otherwise the header shows "0 km")
+      LEFT JOIN LATERAL (
+        SELECT battery_level, ideal_battery_range_km, rated_battery_range_km, est_battery_range_km
+        FROM positions
+        WHERE car_id = c.id AND ideal_battery_range_km IS NOT NULL
+        ORDER BY date DESC
+        LIMIT 1
+      ) pr ON true
       LEFT JOIN LATERAL (
         SELECT state FROM states
         WHERE car_id = c.id
@@ -69,15 +80,17 @@ router.get("/status", async (req: Request, res: Response) => {
         LIMIT 1
       ) u ON true
       LEFT JOIN LATERAL (
-        SELECT ch.charger_power, ch.battery_level, ch.ideal_battery_range_km
+        SELECT ch.charger_power, ch.battery_level, ch.ideal_battery_range_km, ch.date
         FROM charging_processes cpr
         LEFT JOIN LATERAL (
-          SELECT charger_power, battery_level, ideal_battery_range_km FROM charges
+          SELECT charger_power, battery_level, ideal_battery_range_km, date FROM charges
           WHERE charging_process_id = cpr.id
           ORDER BY date DESC
           LIMIT 1
         ) ch ON true
         WHERE cpr.car_id = c.id AND cpr.end_date IS NULL
+          -- Same guard for a charge left open: ignore it without a recent measurement
+          AND ch.date > (NOW() AT TIME ZONE 'UTC') - interval '15 minutes'
         ORDER BY cpr.start_date DESC
         LIMIT 1
       ) cp ON true

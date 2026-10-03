@@ -67,6 +67,8 @@ router.get("/period", async (req: Request, res: Response) => {
         pd.drive_count,
         ROUND(pc.total_energy::numeric, 2) AS total_energy_kwh,
         CASE
+          -- TeslaMate computes the car's efficiency only after a few charges: unknown until then
+          WHEN (SELECT efficiency FROM cars WHERE id = $1) IS NULL THEN NULL
           WHEN pd.consumption_distance > 0
           THEN ROUND((pd.total_consumption_kwh / pd.consumption_distance * 100)::numeric, 1)
           ELSE 0

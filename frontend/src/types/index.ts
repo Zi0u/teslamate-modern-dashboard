@@ -11,7 +11,7 @@ export interface CarStatus {
   model: string | null;
   marketing_name: string | null;
   battery_level: number;
-  ideal_battery_range_km: number;
+  ideal_battery_range_km: number | null;
   rated_battery_range_km: number;
   est_battery_range_km: number;
   odometer: number;
@@ -25,7 +25,8 @@ export interface CarStatus {
 
 export interface MonthlyStats {
   total_distance_km: number;
-  avg_consumption_kwh_per_100km: number;
+  // null until TeslaMate has computed the car's efficiency (after a few charges)
+  avg_consumption_kwh_per_100km: number | null;
   total_energy_kwh: number;
   total_cost: number | null;
   drive_count: number;
@@ -96,11 +97,12 @@ export interface CurrentCharge {
   inside_temp: number | null;
 }
 
+// Fields are null while TeslaMate has no charge data for the car yet
 export interface BatteryHealth {
-  original_range_km: number;
-  current_range_km: number;
-  battery_health_pct: number;
-  degradation_pct: number;
+  original_range_km: number | null;
+  current_range_km: number | null;
+  battery_health_pct: number | null;
+  degradation_pct: number | null;
 }
 
 export interface TopDestination {

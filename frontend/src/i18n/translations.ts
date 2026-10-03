@@ -31,6 +31,7 @@ export const translations = {
     "stats.trips": "trajets",
     "stats.charges": "charges",
     "stats.thisPeriod": "cette p\u00e9riode",
+    "stats.notComputedYet": "pas encore calcul\u00e9e",
     "stats.costNotSet": "non renseign\u00e9",
     "stats.costPartialHint": "Co\u00fbt renseign\u00e9 dans TeslaMate pour une partie des charges seulement",
     "stats.loadError": "Impossible de charger les statistiques",
@@ -41,6 +42,7 @@ export const translations = {
     "health.original": "Autonomie neuve",
     "health.currentShort": "Autonomie",
     "health.loadError": "Donn\u00e9es indisponibles",
+    "health.notEnoughData": "Pas encore assez de donn\u00e9es : il faut quelques charges enregistr\u00e9es",
 
     // Last charge
     "charge.title": "Derni\u00e8re charge",
@@ -49,6 +51,7 @@ export const translations = {
     "charge.duration": "Dur\u00e9e",
     "charge.cost": "Co\u00fbt",
     "charge.loadError": "Donn\u00e9es indisponibles",
+    "charge.noCharge": "Aucune charge enregistr\u00e9e pour le moment",
     "charge.fromGrid": "pr\u00e9lev\u00e9s",
     "charge.powerShort": "Puiss. moy.",
     "charge.rangeShort": "Autonomie",
@@ -173,6 +176,7 @@ export const translations = {
     "stats.trips": "trips",
     "stats.charges": "charges",
     "stats.thisPeriod": "this period",
+    "stats.notComputedYet": "not computed yet",
     "stats.costNotSet": "not set",
     "stats.costPartialHint": "Cost set in TeslaMate for only some of the charges",
     "stats.loadError": "Unable to load statistics",
@@ -183,6 +187,7 @@ export const translations = {
     "health.original": "Original range",
     "health.currentShort": "Range",
     "health.loadError": "Data unavailable",
+    "health.notEnoughData": "Not enough data yet: a few recorded charges are needed",
 
     // Last charge
     "charge.title": "Last charge",
@@ -191,6 +196,7 @@ export const translations = {
     "charge.duration": "Duration",
     "charge.cost": "Cost",
     "charge.loadError": "Data unavailable",
+    "charge.noCharge": "No charge recorded yet",
     "charge.fromGrid": "from the grid",
     "charge.powerShort": "Avg. power",
     "charge.rangeShort": "Range",

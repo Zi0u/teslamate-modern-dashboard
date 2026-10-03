@@ -20,10 +20,19 @@ const API_BASE = "/api";
 // Browser time zone, so the backend cuts days/weeks/months at local midnight
 const TZ = `tz=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`;
 
+// Keeps the HTTP status so components can tell "nothing yet" (404) from a real error
+export class ApiError extends Error {
+  constructor(public status: number, statusText: string) {
+    super(`API error: ${status} ${statusText}`);
+  }
+}
+
+export const isNotFound = (error: unknown) => error instanceof ApiError && error.status === 404;
+
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(`${API_BASE}${url}`);
   if (!res.ok) {
-    throw new Error(`API error: ${res.status} ${res.statusText}`);
+    throw new ApiError(res.status, res.statusText);
   }
   return res.json();
 }
@@ -78,6 +87,8 @@ export function useLastCharge(carId = 1) {
     queryKey: ["charges", "last", carId],
     queryFn: () => fetchJson(`/charges/last?car_id=${carId}`),
     refetchInterval: 300_000,
+    // 404 = no charge recorded yet for this car: nothing to retry
+    retry: (count, error) => !isNotFound(error) && count < 3,
   });
 }
 

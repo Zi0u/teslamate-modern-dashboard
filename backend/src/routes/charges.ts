@@ -198,8 +198,12 @@ router.get("/battery-health", async (req: Request, res: Response) => {
       SELECT
         ROUND((mc.val / ce.efficiency)::numeric, 1) AS original_range_km,
         ROUND((cc.val / ce.efficiency)::numeric, 1) AS current_range_km,
-        LEAST(100, ROUND((cc.val / mc.val * 100)::numeric, 1)) AS battery_health_pct,
-        GREATEST(0, ROUND((100 - cc.val / mc.val * 100)::numeric, 1)) AS degradation_pct
+        -- LEAST/GREATEST ignore NULLs: without charge data (new car) they would return
+        -- 100 % / 0 % instead of "unknown", so keep NULL in that case
+        CASE WHEN cc.val IS NOT NULL AND mc.val IS NOT NULL
+          THEN LEAST(100, ROUND((cc.val / mc.val * 100)::numeric, 1)) END AS battery_health_pct,
+        CASE WHEN cc.val IS NOT NULL AND mc.val IS NOT NULL
+          THEN GREATEST(0, ROUND((100 - cc.val / mc.val * 100)::numeric, 1)) END AS degradation_pct
       FROM max_cap mc, current_cap cc, car_eff ce
       `,
       [carId]
