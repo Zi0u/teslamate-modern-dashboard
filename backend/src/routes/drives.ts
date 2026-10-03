@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { pool } from "../config/database";
+import { getTimeZone, toLocal, localToUtc, localNow } from "../utils/timezone";
 
 const router = Router();
 
@@ -102,17 +103,18 @@ router.get("/activity", async (req: Request, res: Response) => {
     const result = await pool.query(
       `
       SELECT
-        TO_CHAR(d.start_date::date, 'YYYY-MM-DD') AS day,
+        TO_CHAR(${toLocal("d.start_date", "$3")}::date, 'YYYY-MM-DD') AS day,
         COUNT(*) AS drive_count,
         ROUND(SUM(d.distance)::numeric, 1) AS total_distance_km
       FROM drives d
       WHERE d.car_id = $1
-        AND d.start_date >= CURRENT_DATE - ($2 || ' days')::interval
+        -- Last N days including today, from local midnight
+        AND d.start_date >= ${localToUtc(`date_trunc('day', ${localNow("$3")}) - make_interval(days => $2::int - 1)`, "$3")}
         AND d.distance > 0
-      GROUP BY d.start_date::date
+      GROUP BY day
       ORDER BY day
       `,
-      [carId, days]
+      [carId, days, getTimeZone(req)]
     );
 
     res.json(result.rows);
@@ -131,7 +133,7 @@ router.get("/consumption-history", async (req: Request, res: Response) => {
     const result = await pool.query(
       `
       SELECT
-        TO_CHAR(d.start_date::date, 'YYYY-MM-DD') AS day,
+        TO_CHAR(${toLocal("d.start_date", "$3")}::date, 'YYYY-MM-DD') AS day,
         -- Total energy / total distance (distance-weighted), so a short trip
         -- doesn't weigh as much as a long one. Drives that gained range are excluded.
         ROUND(
@@ -148,12 +150,13 @@ router.get("/consumption-history", async (req: Request, res: Response) => {
       FROM drives d
       JOIN cars c ON c.id = d.car_id
       WHERE d.car_id = $1
-        AND d.start_date >= CURRENT_DATE - ($2 || ' days')::interval
+        -- Last N days including today, from local midnight
+        AND d.start_date >= ${localToUtc(`date_trunc('day', ${localNow("$3")}) - make_interval(days => $2::int - 1)`, "$3")}
         AND d.distance > 0
-      GROUP BY d.start_date::date
+      GROUP BY day
       ORDER BY day
       `,
-      [carId, days]
+      [carId, days, getTimeZone(req)]
     );
 
     res.json(result.rows);

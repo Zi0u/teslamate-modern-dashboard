@@ -16,6 +16,9 @@ import type {
 
 const API_BASE = "/api";
 
+// Browser time zone, so the backend cuts days/weeks/months at local midnight
+const TZ = `tz=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`;
+
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(`${API_BASE}${url}`);
   if (!res.ok) {
@@ -46,7 +49,7 @@ export function useCarStatus(carId?: number) {
 export function usePeriodStats(period: "week" | "month" | "last_month" = "month", carId = 1) {
   return useQuery<MonthlyStats>({
     queryKey: ["stats", "period", period, carId],
-    queryFn: () => fetchJson(`/stats/period?car_id=${carId}&period=${period}`),
+    queryFn: () => fetchJson(`/stats/period?car_id=${carId}&period=${period}&${TZ}`),
     refetchInterval: 60_000,
     // Keep the current numbers while another period loads (no skeleton flash when switching tabs)
     placeholderData: keepPreviousData,
@@ -106,7 +109,7 @@ export function useTopDestinations(limit = 3, carId = 1) {
 export function useDriveActivity(days = 15, carId = 1) {
   return useQuery<DriveActivity[]>({
     queryKey: ["drives", "activity", carId, days],
-    queryFn: () => fetchJson(`/drives/activity?car_id=${carId}&days=${days}`),
+    queryFn: () => fetchJson(`/drives/activity?car_id=${carId}&days=${days}&${TZ}`),
     refetchInterval: 300_000,
   });
 }
@@ -114,7 +117,7 @@ export function useDriveActivity(days = 15, carId = 1) {
 export function useConsumptionHistory(days = 7, carId = 1) {
   return useQuery<ConsumptionPoint[]>({
     queryKey: ["drives", "consumption-history", carId, days],
-    queryFn: () => fetchJson(`/drives/consumption-history?car_id=${carId}&days=${days}`),
+    queryFn: () => fetchJson(`/drives/consumption-history?car_id=${carId}&days=${days}&${TZ}`),
     refetchInterval: 300_000,
   });
 }

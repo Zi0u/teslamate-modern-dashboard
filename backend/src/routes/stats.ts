@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { pool } from "../config/database";
+import { getTimeZone, localToUtc, localNow } from "../utils/timezone";
 
 const router = Router();
 
@@ -13,15 +14,18 @@ router.get("/period", async (req: Request, res: Response) => {
     let endConditionDrives = "";
     let endConditionCharges = "";
 
+    // Boundaries at local midnight in the viewer's time zone ($2), converted to UTC
+    const now = localNow("$2");
     if (period === "week") {
-      startExpr = "date_trunc('week', CURRENT_DATE)";
+      startExpr = localToUtc(`date_trunc('week', ${now})`, "$2");
     } else if (period === "last_month") {
-      startExpr = "date_trunc('month', CURRENT_DATE - interval '1 month')";
-      endConditionDrives = "AND d.start_date < date_trunc('month', CURRENT_DATE)";
-      endConditionCharges = "AND cp.end_date < date_trunc('month', CURRENT_DATE)";
+      startExpr = localToUtc(`date_trunc('month', ${now} - interval '1 month')`, "$2");
+      const endExpr = localToUtc(`date_trunc('month', ${now})`, "$2");
+      endConditionDrives = `AND d.start_date < ${endExpr}`;
+      endConditionCharges = `AND cp.end_date < ${endExpr}`;
     } else {
       // Default: current month
-      startExpr = "date_trunc('month', CURRENT_DATE)";
+      startExpr = localToUtc(`date_trunc('month', ${now})`, "$2");
     }
 
     const result = await pool.query(
@@ -72,7 +76,7 @@ router.get("/period", async (req: Request, res: Response) => {
         pc.costed_charge_count
       FROM period_drives pd, period_charges pc
       `,
-      [carId]
+      [carId, getTimeZone(req)]
     );
 
     res.json(result.rows[0]);
