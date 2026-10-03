@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type {
   CarSummary,
   CarStatus,
@@ -48,6 +48,8 @@ export function usePeriodStats(period: "week" | "month" | "last_month" = "month"
     queryKey: ["stats", "period", period, carId],
     queryFn: () => fetchJson(`/stats/period?car_id=${carId}&period=${period}`),
     refetchInterval: 60_000,
+    // Keep the current numbers while another period loads (no skeleton flash when switching tabs)
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -29,6 +29,8 @@ router.get("/period", async (req: Request, res: Response) => {
       WITH period_drives AS (
         SELECT
           COALESCE(SUM(d.distance), 0) AS total_distance,
+          -- Distance of drives that consumed range (same basis as the consumption chart)
+          COALESCE(SUM(d.distance) FILTER (WHERE d.start_ideal_range_km > d.end_ideal_range_km), 0) AS consumption_distance,
           COUNT(d.id) AS drive_count,
           COALESCE(SUM(
             CASE
@@ -48,7 +50,9 @@ router.get("/period", async (req: Request, res: Response) => {
         SELECT
           COALESCE(SUM(cp.charge_energy_added), 0) AS total_energy,
           COALESCE(SUM(cp.cost), 0) AS total_cost,
-          COUNT(cp.id) AS charge_count
+          COUNT(cp.id) AS charge_count,
+          -- TeslaMate leaves cost NULL when no price is set for the location
+          COUNT(cp.cost) AS costed_charge_count
         FROM charging_processes cp
         WHERE cp.car_id = $1
           AND cp.end_date >= ${startExpr}
@@ -59,12 +63,13 @@ router.get("/period", async (req: Request, res: Response) => {
         pd.drive_count,
         ROUND(pc.total_energy::numeric, 2) AS total_energy_kwh,
         CASE
-          WHEN pd.total_distance > 0
-          THEN ROUND((pd.total_consumption_kwh / pd.total_distance * 100)::numeric, 1)
+          WHEN pd.consumption_distance > 0
+          THEN ROUND((pd.total_consumption_kwh / pd.consumption_distance * 100)::numeric, 1)
           ELSE 0
         END AS avg_consumption_kwh_per_100km,
         ROUND(pc.total_cost::numeric, 2) AS total_cost,
-        pc.charge_count
+        pc.charge_count,
+        pc.costed_charge_count
       FROM period_drives pd, period_charges pc
       `,
       [carId]

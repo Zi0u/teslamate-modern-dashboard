@@ -31,6 +31,8 @@ export const translations = {
     "stats.trips": "trajets",
     "stats.charges": "charges",
     "stats.thisPeriod": "cette p\u00e9riode",
+    "stats.costNotSet": "non renseign\u00e9",
+    "stats.costPartialHint": "Co\u00fbt renseign\u00e9 dans TeslaMate pour une partie des charges seulement",
     "stats.loadError": "Impossible de charger les statistiques",
 
     // Battery health
@@ -142,6 +144,8 @@ export const translations = {
     "stats.trips": "trips",
     "stats.charges": "charges",
     "stats.thisPeriod": "this period",
+    "stats.costNotSet": "not set",
+    "stats.costPartialHint": "Cost set in TeslaMate for only some of the charges",
     "stats.loadError": "Unable to load statistics",
 
     // Battery health

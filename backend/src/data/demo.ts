@@ -59,6 +59,7 @@ export const demoStats = {
     avg_consumption_kwh_per_100km: "15.2",
     total_cost: "7.12",
     charge_count: "2",
+    costed_charge_count: "2",
   },
   month: {
     total_distance_km: "842.30",
@@ -67,6 +68,7 @@ export const demoStats = {
     avg_consumption_kwh_per_100km: "16.0",
     total_cost: "33.70",
     charge_count: "8",
+    costed_charge_count: "8",
   },
   last_month: {
     total_distance_km: "1124.60",
@@ -75,6 +77,7 @@ export const demoStats = {
     avg_consumption_kwh_per_100km: "15.7",
     total_cost: "44.10",
     charge_count: "11",
+    costed_charge_count: "11",
   },
 };
 
@@ -269,6 +272,7 @@ export const demoCar2Stats = {
     avg_consumption_kwh_per_100km: "17.3",
     total_cost: "4.08",
     charge_count: "1",
+    costed_charge_count: "1",
   },
   month: {
     total_distance_km: "412.50",
@@ -277,6 +281,7 @@ export const demoCar2Stats = {
     avg_consumption_kwh_per_100km: "17.5",
     total_cost: "18.10",
     charge_count: "4",
+    costed_charge_count: "4",
   },
   last_month: {
     total_distance_km: "638.80",
@@ -285,6 +290,7 @@ export const demoCar2Stats = {
     avg_consumption_kwh_per_100km: "17.3",
     total_cost: "27.55",
     charge_count: "6",
+    costed_charge_count: "6",
   },
 };
 

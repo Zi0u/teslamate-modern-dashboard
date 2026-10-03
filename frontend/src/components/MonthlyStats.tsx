@@ -12,10 +12,11 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
   const { data, isLoading, error } = usePeriodStats(period, carId);
   const { locale, t } = useTranslation();
 
-  const pillBase =
-    "px-3 py-1 text-xs font-medium rounded-full transition-colors cursor-pointer";
-  const pillActive = "bg-primary text-primary-foreground";
-  const pillInactive = "text-muted-foreground hover:text-foreground hover:bg-muted";
+  const periods: { value: Period; label: string }[] = [
+    { value: "week", label: t("stats.week") },
+    { value: "month", label: t("stats.month") },
+    { value: "last_month", label: t("stats.lastMonth") },
+  ];
 
   if (isLoading) {
     return (
@@ -45,65 +46,70 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
 
   const numLocale = locale === "fr" ? "fr-FR" : "en-GB";
 
+  const formatNumber = (value: number, digits: number) =>
+    value.toLocaleString(numLocale, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+
+  // Cost is only meaningful for charges that have a price set in TeslaMate
+  const chargeCount = Number(data.charge_count);
+  const costedCount = Number(data.costed_charge_count ?? chargeCount);
+  const costUnknown = chargeCount > 0 && costedCount === 0;
+  const costPartial = costedCount > 0 && costedCount < chargeCount;
+
   const stats = [
     {
       icon: Route,
       label: t("stats.distance"),
-      value: `${Number(data.total_distance_km).toLocaleString(numLocale, { maximumFractionDigits: 0 })} km`,
+      value: `${formatNumber(Number(data.total_distance_km), 0)} km`,
       sub: `${data.drive_count} ${t("stats.trips")}`,
     },
     {
       icon: Zap,
       label: t("stats.avgConsumption"),
-      value: `${data.avg_consumption_kwh_per_100km}`,
+      value: formatNumber(Number(data.avg_consumption_kwh_per_100km), 1),
       sub: "kWh/100km",
     },
     {
       icon: Fuel,
       label: t("stats.totalEnergy"),
-      value: `${data.total_energy_kwh} kWh`,
+      value: `${formatNumber(Number(data.total_energy_kwh), 1)} kWh`,
       sub: `${data.charge_count} ${t("stats.charges")}`,
     },
     {
       icon: Hash,
       label: t("stats.energyCost"),
-      value:
-        data.total_cost != null
-          ? `${Number(data.total_cost).toLocaleString(numLocale, {
-              minimumFractionDigits: 2,
-            })} €`
-          : "N/A",
-      sub: t("stats.thisPeriod"),
+      value: costUnknown ? "N/A" : `${formatNumber(Number(data.total_cost), 2)} €`,
+      sub: costUnknown
+        ? t("stats.costNotSet")
+        : costPartial
+          ? `${costedCount}/${chargeCount} ${t("stats.charges")}`
+          : t("stats.thisPeriod"),
+      hint: costPartial ? t("stats.costPartialHint") : undefined,
     },
   ];
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-semibold text-foreground">
-            {t("stats.title")}
-          </CardTitle>
-          <div className="flex items-center gap-1 rounded-full border p-0.5">
+        <CardTitle className="text-base font-semibold text-foreground">
+          {t("stats.title")}
+        </CardTitle>
+        {/* Period tabs */}
+        <div role="tablist" className="mt-3 grid grid-cols-3 border-b border-border">
+          {periods.map(({ value, label }) => (
             <button
-              onClick={() => setPeriod("week")}
-              className={`${pillBase} ${period === "week" ? pillActive : pillInactive}`}
+              key={value}
+              role="tab"
+              aria-selected={period === value}
+              onClick={() => setPeriod(value)}
+              className={`-mb-px border-b-2 pb-2 text-xs font-medium transition-colors cursor-pointer ${
+                period === value
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
             >
-              {t("stats.week")}
+              {label}
             </button>
-            <button
-              onClick={() => setPeriod("month")}
-              className={`${pillBase} ${period === "month" ? pillActive : pillInactive}`}
-            >
-              {t("stats.month")}
-            </button>
-            <button
-              onClick={() => setPeriod("last_month")}
-              className={`${pillBase} ${period === "last_month" ? pillActive : pillInactive}`}
-            >
-              {t("stats.lastMonth")}
-            </button>
-          </div>
+          ))}
         </div>
       </CardHeader>
       <CardContent className="space-y-1.5">
@@ -115,7 +121,12 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
             <stat.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             <span className="text-xs text-muted-foreground flex-1">{stat.label}</span>
             <span className="text-sm font-bold">{stat.value}</span>
-            <span className="text-[10px] text-muted-foreground w-16 text-right">{stat.sub}</span>
+            <span
+              className={`text-[10px] w-16 text-right ${stat.hint ? "text-amber-400 cursor-help" : "text-muted-foreground"}`}
+              title={stat.hint}
+            >
+              {stat.sub}
+            </span>
           </div>
         ))}
       </CardContent>

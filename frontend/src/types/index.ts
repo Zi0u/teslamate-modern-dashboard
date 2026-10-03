@@ -30,6 +30,7 @@ export interface MonthlyStats {
   total_cost: number | null;
   drive_count: number;
   charge_count: number;
+  costed_charge_count: number;
 }
 
 export interface Drive {
