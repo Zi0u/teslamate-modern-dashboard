@@ -56,7 +56,7 @@ export const translations = {
     "charge.costNotSet": "non renseign\u00e9",
     "charge.realKm": "r\u00e9els",
     "charge.tabDetails": "D\u00e9tails",
-    "charge.tabCompare": "vs Thermique",
+    "charge.tabCompare": "\u00c9conomies",
     "charge.gasoline": "Essence",
     "charge.diesel": "Diesel",
     "charge.electric": "\u00c9lectrique",
@@ -72,6 +72,8 @@ export const translations = {
     "charge.fuelChargedIn": "Charge hors de France",
     "charge.fuelNoPriceShort": "Aucun prix d\u00e9fini",
     "charge.extraShort": "de plus",
+    "charge.costPer100": "Co\u00fbt aux 100 km",
+    "charge.realKmNote": "Km r\u00e9els : \u00e9nergie ajout\u00e9e \u00f7 votre consommation moyenne des 30 derniers jours",
     "charge.costUnknown": "Co\u00fbt de la charge non renseign\u00e9 dans TeslaMate",
 
     // Charge in progress
@@ -190,7 +192,7 @@ export const translations = {
     "charge.costNotSet": "not set",
     "charge.realKm": "real",
     "charge.tabDetails": "Details",
-    "charge.tabCompare": "vs Combustion",
+    "charge.tabCompare": "Savings",
     "charge.gasoline": "Gasoline",
     "charge.diesel": "Diesel",
     "charge.electric": "Electric",
@@ -206,6 +208,8 @@ export const translations = {
     "charge.fuelChargedIn": "Charged outside France",
     "charge.fuelNoPriceShort": "No price set",
     "charge.extraShort": "more",
+    "charge.costPer100": "Cost per 100 km",
+    "charge.realKmNote": "Real km: energy added \u00f7 your average consumption over the last 30 days",
     "charge.costUnknown": "Charge cost not set in TeslaMate",
 
     // Charge in progress
