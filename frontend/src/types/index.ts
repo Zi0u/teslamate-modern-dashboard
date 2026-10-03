@@ -82,6 +82,11 @@ export interface FuelPrices {
 
 export interface CurrentCharge {
   start_date: string;
+  start_battery_level: number | null;
+  address: string | null;
+  geofence: string | null;
+  is_dc: boolean | null;
+  max_power_kw: number | null;
   charge_energy_added: number;
   charger_power: number;
   battery_level: number;

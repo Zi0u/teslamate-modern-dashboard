@@ -37,6 +37,11 @@ export const demoCar2 = {
 
 export const demoCar2CurrentCharge = {
   start_date: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
+  start_battery_level: 10,
+  address: "Centre commercial Vélizy 2, Vélizy-Villacoublay, France",
+  geofence: null,
+  is_dc: false,
+  max_power_kw: 11,
   charge_energy_added: "2.45",
   charger_power: 11,
   battery_level: 13,
@@ -308,7 +313,7 @@ export const demoCar2BatteryHealth = {
 
 export const demoCar2LastCharge = {
   start_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-  end_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000).toISOString(),
+  end_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000 + 38 * 60 * 1000).toISOString(),
   charge_energy_added: "52.10",
   charge_energy_used: "54.00",
   start_battery_level: 15,

@@ -295,6 +295,13 @@ export function Dashboard() {
       </header>
 
       <main className="px-4 py-6 sm:px-6 pb-16">
+        {/* Live charge: full-width banner on top, only while charging */}
+        {car?.state === "charging" && (
+          <div className="mb-6">
+            <CurrentChargeCard carId={selectedCarId} />
+          </div>
+        )}
+
         {/* 3 columns (1/4 · 1/2 · 1/4). Row 1: map + battery health + stats line up with recent drives.
             Row 2: top destinations under the drives (empty under the stats).
             The middle column spans both rows; the last card of each cell stretches
@@ -325,8 +332,6 @@ export function Dashboard() {
                   <Skeleton className="h-32 w-full" />
                 </CardContent>
               </Card>
-            ) : car.state === "charging" ? (
-              <CurrentChargeCard carId={selectedCarId} />
             ) : (
               <LastChargeCard carId={selectedCarId} />
             )}

@@ -84,6 +84,11 @@ router.get("/current", async (req: Request, res: Response) => {
         -- TeslaMate stores timestamps in UTC in a "timestamp without time zone"
         -- column; declare it UTC so the pg driver doesn't shift it to local time.
         cp.start_date AT TIME ZONE 'UTC' AS start_date,
+        cp.start_battery_level,
+        a.display_name AS address,
+        g.name AS geofence,
+        ch.fast_charger_present AS is_dc,
+        mx.max_power_kw,
         ch.charge_energy_added,
         ch.charger_power,
         ch.battery_level,
@@ -94,12 +99,20 @@ router.get("/current", async (req: Request, res: Response) => {
       FROM charging_processes cp
       LEFT JOIN LATERAL (
         SELECT charge_energy_added, charger_power, battery_level,
-               ideal_battery_range_km, rated_battery_range_km, outside_temp
+               ideal_battery_range_km, rated_battery_range_km, outside_temp,
+               COALESCE(fast_charger_present, false) AS fast_charger_present
         FROM charges
         WHERE charging_process_id = cp.id
         ORDER BY date DESC
         LIMIT 1
       ) ch ON true
+      LEFT JOIN LATERAL (
+        SELECT MAX(charger_power) AS max_power_kw
+        FROM charges
+        WHERE charging_process_id = cp.id
+      ) mx ON true
+      LEFT JOIN addresses a ON a.id = cp.address_id
+      LEFT JOIN geofences g ON g.id = cp.geofence_id
       LEFT JOIN LATERAL (
         SELECT inside_temp
         FROM positions

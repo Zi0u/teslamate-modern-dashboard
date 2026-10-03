@@ -79,13 +79,12 @@ export const translations = {
     // Charge in progress
     "charging.title": "Charge en cours",
     "charging.since": "En charge depuis",
-    "charging.level": "Niveau",
-    "charging.added": "Charg\u00e9e",
+    "charging.started": "d\u00e9but \u00e0",
+    "charging.energy": "\u00c9nergie charg\u00e9e",
+    "charging.outside": "Ext\u00e9rieur",
+    "charging.inside": "Habitacle",
     "charging.power": "Puissance",
     "charging.range": "Autonomie",
-    "charging.temps": "Temp\u00e9ratures",
-    "charging.tempOutShort": "ext.",
-    "charging.tempInShort": "hab.",
 
     // RecentDrives
     "drives.title": "Les 10 derniers trajets",
@@ -215,13 +214,12 @@ export const translations = {
     // Charge in progress
     "charging.title": "Charging",
     "charging.since": "Charging for",
-    "charging.level": "Level",
-    "charging.added": "Added",
+    "charging.started": "started at",
+    "charging.energy": "Energy added",
+    "charging.outside": "Outside",
+    "charging.inside": "Cabin",
     "charging.power": "Power",
     "charging.range": "Range",
-    "charging.temps": "Temperatures",
-    "charging.tempOutShort": "out",
-    "charging.tempInShort": "in",
 
     // RecentDrives
     "drives.title": "Last 10 drives",
