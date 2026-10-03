@@ -169,7 +169,8 @@ export function CarMap({ carId = 1 }: { carId?: number }) {
       <CardContent className="flex flex-1 flex-col">
         <div
           ref={mapRef}
-          className="car-map w-full flex-1 min-h-48 rounded-md border overflow-hidden"
+          // isolate: keeps Leaflet's internal z-indexes (400+) from covering dialogs and dropdowns
+          className="car-map isolate w-full flex-1 min-h-48 rounded-md border overflow-hidden"
         />
         <p className="text-xs text-muted-foreground mt-2">
           {t("map.lastUpdate")}: {new Date(car.last_update).toLocaleString(dateLocale)}

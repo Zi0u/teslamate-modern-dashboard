@@ -10,7 +10,8 @@ export function Tooltip({
   return (
     <div className="relative group">
       {children}
-      <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 whitespace-nowrap rounded-md bg-zinc-900 px-2 py-1 text-xs text-zinc-100 shadow-md opacity-0 transition-opacity group-hover:opacity-100 z-50">
+      {/* Hover-only: not rendered on touch screens, where it can't show and could overflow the viewport */}
+      <span className="pointer-events-none absolute hidden [@media(hover:hover)]:block left-1/2 -translate-x-1/2 top-full mt-2 whitespace-nowrap rounded-md bg-zinc-900 px-2 py-1 text-xs text-zinc-100 shadow-md opacity-0 transition-opacity group-hover:opacity-100 z-50">
         {label}
       </span>
     </div>

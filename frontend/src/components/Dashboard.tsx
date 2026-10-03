@@ -1,4 +1,4 @@
-import { Battery, BatteryLow, BatteryMedium, BatteryFull, EvCharger, Car, Cpu, Languages, HelpCircle, Settings, MapPin, ChevronDown } from "lucide-react";
+import { Battery, BatteryLow, BatteryMedium, BatteryFull, EvCharger, Car, Cpu, Languages, HelpCircle, Settings, MapPin, ChevronDown, Info } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "../i18n/LanguageContext";
 import { useCarStatus, useCars, useGrafanaUrl } from "../hooks/useApi";
@@ -16,6 +16,7 @@ import { BatteryHealthGauge } from "./BatteryHealthGauge";
 import { LastChargeCard } from "./LastChargeCard";
 import { CurrentChargeCard } from "./CurrentChargeCard";
 import { GrafanaNav } from "./GrafanaNav";
+import { AboutModal } from "./AboutModal";
 import type { TranslationKey } from "../i18n/translations";
 
 const pillBase = "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium whitespace-nowrap";
@@ -52,7 +53,9 @@ function BatteryIcon({ level, className }: { level: number; className?: string }
 }
 
 function HelpDropdown() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -73,6 +76,16 @@ function HelpDropdown() {
       </button>
       {open && (
         <div className="absolute right-0 top-full mt-1 w-40 rounded-lg border bg-card shadow-lg z-50 p-1">
+          <button
+            onClick={() => {
+              setOpen(false);
+              setShowAbout(true);
+            }}
+            className="flex w-full items-center justify-end gap-2.5 px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors rounded-md cursor-pointer"
+          >
+            {t("help.about")}
+            <Info className="h-4 w-4" />
+          </button>
           <a
             href="https://github.com/teslamate-org/teslamate"
             target="_blank"
@@ -97,6 +110,7 @@ function HelpDropdown() {
           </div>
         </div>
       )}
+      {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
     </div>
   );
 }
