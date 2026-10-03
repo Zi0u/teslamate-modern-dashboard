@@ -21,6 +21,10 @@ const CONTENT = {
       ["Batterie", "santé de la batterie, historique de niveau et consommation sur 7 jours."],
       ["Trajets", "10 derniers trajets, destinations favorites et activité sur 30 jours."],
       ["Multi-véhicules, FR / EN", "et un mode démo sans base de données."],
+      [
+        "Voitures vendues ou inactives",
+        "désactivez leur collecte dans TeslaMate (Settings → la voiture → Enabled) : elles sont masquées du dashboard, leur historique reste intact.",
+      ],
     ],
     calcTitle: "Comment sont faits les calculs",
     calcs: [
@@ -61,6 +65,10 @@ const CONTENT = {
       ["Battery", "battery health, 7-day level history and consumption."],
       ["Drives", "last 10 drives, top destinations and 30-day activity."],
       ["Multiple cars, FR / EN", "and a demo mode with no database needed."],
+      [
+        "Sold or inactive cars",
+        "disable their data collection in TeslaMate (Settings → the car → Enabled): they are hidden from the dashboard, their history stays intact.",
+      ],
     ],
     calcTitle: "How things are calculated",
     calcs: [

@@ -6,8 +6,21 @@ const router = Router();
 
 router.get("/list", async (_req: Request, res: Response) => {
   try {
+    // Cars whose data collection is disabled in TeslaMate (Settings > car > "Enabled",
+    // e.g. a sold car) are hidden; their data stays untouched. If every car is disabled,
+    // list them all rather than show an empty dashboard.
     const result = await pool.query(
-      `SELECT id, name, model, marketing_name FROM cars ORDER BY id`
+      `
+      WITH cars_with_settings AS (
+        SELECT c.id, c.name, c.model, c.marketing_name, COALESCE(cs.enabled, true) AS enabled
+        FROM cars c
+        LEFT JOIN car_settings cs ON cs.id = c.settings_id
+      )
+      SELECT id, name, model, marketing_name
+      FROM cars_with_settings
+      WHERE enabled OR NOT EXISTS (SELECT 1 FROM cars_with_settings WHERE enabled)
+      ORDER BY id
+      `
     );
     res.json(result.rows);
   } catch (err) {
@@ -19,6 +32,7 @@ router.get("/list", async (_req: Request, res: Response) => {
 router.get("/status", async (req: Request, res: Response) => {
   const carId = parseInt(req.query.car_id as string) || null;
   try {
+    // Without car_id: first car with data collection enabled (same rule as /list)
     const whereClause = carId ? "WHERE c.id = $1" : "";
     const params = carId ? [carId] : [];
     const result = await pool.query<CarStatus>(
@@ -100,8 +114,9 @@ router.get("/status", async (req: Request, res: Response) => {
         ORDER BY start_date DESC
         LIMIT 1
       ) dr ON true
+      LEFT JOIN car_settings cset ON cset.id = c.settings_id
       ${whereClause}
-      ORDER BY c.id
+      ORDER BY COALESCE(cset.enabled, true) DESC, c.id
       LIMIT 1
     `,
       params
