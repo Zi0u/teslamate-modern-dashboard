@@ -135,6 +135,9 @@ export const translations = {
 
     // Demo mode
     "demo.install": "Voir sur GitHub",
+    "demo.bannerTitle": "Mode d\u00e9mo :",
+    "demo.bannerText": "les donn\u00e9es affich\u00e9es sont fictives (v\u00e9hicules, trajets, charges et positions).",
+    "demo.bannerLink": "Installer sur votre TeslaMate",
   },
   en: {
     // Header
@@ -272,6 +275,9 @@ export const translations = {
 
     // Demo mode
     "demo.install": "View on GitHub",
+    "demo.bannerTitle": "Demo mode:",
+    "demo.bannerText": "the data shown is fictional (cars, drives, charges and locations).",
+    "demo.bannerLink": "Install on your TeslaMate",
   },
 } as const;
 

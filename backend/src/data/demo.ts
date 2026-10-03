@@ -110,7 +110,7 @@ export const demoLastCharge = {
   address: "12, Rue de Rivoli, Paris, France",
   country_code: "fr",
   geofence: "Maison",
-  max_power_kw: 7,
+  max_power_kw: 11,
   is_dc: false,
   consumption_30d_kwh_100km: "14.8",
 };

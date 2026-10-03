@@ -327,6 +327,29 @@ export function Dashboard() {
       </header>
 
       <main className="px-4 py-6 sm:px-6 pb-16">
+        {/* Demo mode: make it clear the data is fictional */}
+        {car?.demo_mode && (
+          <div
+            role="note"
+            className="mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-lg border border-sky-500/30 bg-sky-500/10 px-4 py-2.5 text-sm"
+          >
+            <p className="flex items-center gap-2 text-sky-100">
+              <Info className="h-4 w-4 shrink-0 text-sky-400" />
+              <span>
+                <span className="font-semibold">{t("demo.bannerTitle")}</span> {t("demo.bannerText")}
+              </span>
+            </p>
+            <a
+              href="https://github.com/Zi0u/teslamate-modern-dashboard#teslamate-modern-dashboard"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 text-xs font-medium text-sky-300 underline-offset-2 hover:underline"
+            >
+              {t("demo.bannerLink")} →
+            </a>
+          </div>
+        )}
+
         {/* Live charge: full-width banner on top, only while charging */}
         {car?.state === "charging" && (
           <div className="mb-6">

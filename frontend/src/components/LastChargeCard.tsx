@@ -184,12 +184,12 @@ export function LastChargeCard({ carId = 1 }: { carId?: number }) {
           <div className={`[grid-area:1/1] min-w-0 ${tab === "details" ? "" : "invisible"}`} aria-hidden={tab !== "details"}>
             {/* Battery level bar: level before the charge (dim) + what this charge added (bright) */}
             <div className="mb-4">
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                <span>{start}%</span>
-                <span className="font-semibold text-emerald-400">+{end - start}%</span>
-                <span>{end}%</span>
+              <div className="mb-1.5 flex items-baseline justify-between tabular-nums">
+                <span className="text-base font-semibold text-foreground/70">{start}%</span>
+                <span className="text-lg font-bold text-emerald-400">+{end - start}%</span>
+                <span className="text-base font-bold text-foreground">{end}%</span>
               </div>
-              <div className="relative h-2 rounded-full bg-muted overflow-hidden">
+              <div className="relative h-2.5 rounded-full bg-muted overflow-hidden">
                 <div className="absolute inset-y-0 left-0 bg-emerald-500/30" style={{ width: `${start}%` }} />
                 <div
                   className="absolute inset-y-0 rounded-r-full bg-emerald-500"
