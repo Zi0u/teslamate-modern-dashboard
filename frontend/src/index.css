@@ -35,3 +35,18 @@
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
+
+/* Map zoom buttons: hidden until the map is hovered (always shown on touch screens) */
+.car-map .leaflet-control-zoom {
+  opacity: 0;
+  transition: opacity 150ms ease-in-out;
+}
+.car-map:hover .leaflet-control-zoom,
+.car-map:focus-within .leaflet-control-zoom {
+  opacity: 1;
+}
+@media (hover: none) {
+  .car-map .leaflet-control-zoom {
+    opacity: 1;
+  }
+}

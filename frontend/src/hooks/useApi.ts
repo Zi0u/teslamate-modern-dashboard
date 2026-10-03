@@ -37,7 +37,9 @@ export function useCarStatus(carId?: number) {
   return useQuery<CarStatus>({
     queryKey: ["car", "status", carId],
     queryFn: () => fetchJson(carId ? `/car/status?car_id=${carId}` : "/car/status"),
-    refetchInterval: 30_000,
+    // TeslaMate streams positions several times per second while driving:
+    // poll fast so the map follows the car, slow down otherwise.
+    refetchInterval: (query) => (query.state.data?.state === "driving" ? 3_000 : 30_000),
   });
 }
 

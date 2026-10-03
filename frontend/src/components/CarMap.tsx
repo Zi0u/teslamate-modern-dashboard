@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Cloud, Sun, CloudRain, CloudSnow, CloudFog, CloudLightning, Droplets, Wind } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
@@ -18,18 +18,20 @@ function weatherIcon(code: number, isDay: boolean) {
 }
 
 export function CarMap({ carId = 1 }: { carId?: number }) {
-  const { data: car, isLoading, error } = useCarStatus(carId);
+  const { data: car, isLoading } = useCarStatus(carId);
   const { locale, t } = useTranslation();
   const { data: weather } = useWeather(car?.latitude, car?.longitude);
   const mapRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapInstanceRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const markerRef = useRef<any>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const hasPosition = Boolean(car?.latitude && car?.longitude);
 
+  // Create the map once; position updates only move the marker (no rebuild/flicker)
   useEffect(() => {
-    if (!car || !car.latitude || !car.longitude || !mapRef.current) return;
-
-    const lat = Number(car.latitude);
-    const lon = Number(car.longitude);
+    if (!hasPosition || !mapRef.current) return;
 
     // Load Leaflet CSS if not already loaded
     if (!document.querySelector('link[href*="leaflet.css"]')) {
@@ -48,12 +50,15 @@ export function CarMap({ carId = 1 }: { carId?: number }) {
 
       const map = L.map(mapRef.current, {
         zoomControl: false,
-        attributionControl: false,
-      }).setView([lat, lon], 16);
+      }).setView([0, 0], 16);
+      // +/- buttons, revealed on hover (see .car-map in index.css)
+      L.control.zoom({ position: "topright" }).addTo(map);
+      map.attributionControl.setPrefix(false);
 
-      // CartoDB Voyager tiles (free, no API key)
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+      // OpenStreetMap tiles (free, no API key — attribution required by the OSM tile policy)
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
       }).addTo(map);
 
       // Custom marker
@@ -71,9 +76,9 @@ export function CarMap({ carId = 1 }: { carId?: number }) {
         iconAnchor: [8, 8],
       });
 
-      L.marker([lat, lon], { icon: carIcon }).addTo(map);
-
+      markerRef.current = L.marker([0, 0], { icon: carIcon }).addTo(map);
       mapInstanceRef.current = map;
+      setMapReady(true);
     };
 
     if (!(window as typeof window & { L?: unknown }).L) {
@@ -89,17 +94,19 @@ export function CarMap({ carId = 1 }: { carId?: number }) {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
+        markerRef.current = null;
+        setMapReady(false);
       }
     };
-  }, [car?.latitude, car?.longitude]);
+  }, [hasPosition]);
 
-  // Update map view when position changes
+  // Follow the car: move the marker and pan smoothly, keeping the user's zoom level
   useEffect(() => {
-    if (!car || !mapInstanceRef.current) return;
-    const lat = Number(car.latitude);
-    const lon = Number(car.longitude);
-    mapInstanceRef.current.setView([lat, lon], 16);
-  }, [car?.latitude, car?.longitude]);
+    if (!mapReady || !car?.latitude || !car?.longitude) return;
+    const latLng = [Number(car.latitude), Number(car.longitude)];
+    markerRef.current.setLatLng(latLng);
+    mapInstanceRef.current.panTo(latLng, { animate: true });
+  }, [mapReady, car?.latitude, car?.longitude]);
 
   if (isLoading) {
     return (
@@ -114,7 +121,7 @@ export function CarMap({ carId = 1 }: { carId?: number }) {
     );
   }
 
-  if (error || !car || !car.latitude || !car.longitude) {
+  if (!car?.latitude || !car?.longitude) {
     return (
       <Card>
         <CardHeader>
@@ -154,7 +161,7 @@ export function CarMap({ carId = 1 }: { carId?: number }) {
       <CardContent>
         <div
           ref={mapRef}
-          className="w-full h-48 rounded-md border overflow-hidden"
+          className="car-map w-full h-48 rounded-md border overflow-hidden"
         />
         <p className="text-xs text-muted-foreground mt-2">
           {t("map.lastUpdate")}: {new Date(car.last_update).toLocaleString(dateLocale)}

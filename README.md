@@ -192,7 +192,7 @@ The dashboard will be available at `http://localhost:5173` (dev) with the API on
 
 - **Frontend**: React 18 + Vite + Tailwind CSS + Recharts + React Query
 - **Backend**: Node.js + Express + TypeScript
-- **Map**: Leaflet + CartoDB Voyager tiles (free, no API key)
+- **Map**: Leaflet + OpenStreetMap tiles (free, no API key)
 - **Weather**: Open-Meteo API (free, no API key)
 
 ## License

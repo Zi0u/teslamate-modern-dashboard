@@ -38,9 +38,14 @@ router.get("/status", async (req: Request, res: Response) => {
         p.latitude,
         p.longitude,
         p.date AS last_update,
-        -- TeslaMate keeps state "online" while charging; derive "charging"
-        -- from an open charging_process that is actually drawing power.
-        CASE WHEN cp.charger_power > 0 THEN 'charging' ELSE s.state::text END AS state,
+        -- TeslaMate keeps state "online" while charging or driving; derive
+        -- "charging" from an open charging_process that is actually drawing
+        -- power, and "driving" from an open drive.
+        CASE
+          WHEN cp.charger_power > 0 THEN 'charging'
+          WHEN dr.id IS NOT NULL THEN 'driving'
+          ELSE s.state::text
+        END AS state,
         u.version AS firmware_version
       FROM cars c
       LEFT JOIN LATERAL (
@@ -76,6 +81,12 @@ router.get("/status", async (req: Request, res: Response) => {
         ORDER BY cpr.start_date DESC
         LIMIT 1
       ) cp ON true
+      LEFT JOIN LATERAL (
+        SELECT id FROM drives
+        WHERE car_id = c.id AND end_date IS NULL
+        ORDER BY start_date DESC
+        LIMIT 1
+      ) dr ON true
       ${whereClause}
       ORDER BY c.id
       LIMIT 1
