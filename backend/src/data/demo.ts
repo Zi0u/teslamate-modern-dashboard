@@ -244,10 +244,12 @@ const generateConsumptionHistory = () => {
     day.setDate(day.getDate() - i);
     const dayStr = day.toISOString().split("T")[0];
     if (Math.random() > 0.15) {
+      const distance = (10 + Math.random() * 40).toFixed(1);
       history.push({
         day: dayStr,
         avg_consumption: (13 + Math.random() * 6).toFixed(1),
-        total_distance_km: (10 + Math.random() * 40).toFixed(1),
+        consumption_distance_km: distance,
+        total_distance_km: distance,
         drive_count: String(1 + Math.floor(Math.random() * 4)),
       });
     }
@@ -428,10 +430,12 @@ const generateCar2ConsumptionHistory = () => {
     day.setDate(day.getDate() - i);
     const dayStr = day.toISOString().split("T")[0];
     if (Math.random() > 0.25) {
+      const distance = (15 + Math.random() * 50).toFixed(1);
       history.push({
         day: dayStr,
         avg_consumption: (15 + Math.random() * 5).toFixed(1),
-        total_distance_km: (15 + Math.random() * 50).toFixed(1),
+        consumption_distance_km: distance,
+        total_distance_km: distance,
         drive_count: String(1 + Math.floor(Math.random() * 3)),
       });
     }

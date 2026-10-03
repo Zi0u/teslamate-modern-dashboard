@@ -15,8 +15,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 import { useBatteryHistory, useConsumptionHistory } from "../hooks/useApi";
 import { useTranslation } from "../i18n/LanguageContext";
+import type { ConsumptionPoint } from "../types";
 
 type Tab = "battery" | "consumption";
+
+const AVG_COLOR = "hsl(48, 96%, 53%)";
+
+type ConsumptionChartPoint = Omit<ConsumptionPoint, "avg_consumption"> & { avg_consumption: number | null };
 
 interface TooltipPayloadItem {
   dataKey: string;
@@ -57,29 +62,51 @@ function BatteryTooltip({ active, payload, label, dateLocale, batteryLabel, rang
 
 interface ConsumptionTooltipProps {
   active?: boolean;
-  payload?: TooltipPayloadItem[];
+  payload?: { payload: ConsumptionChartPoint }[];
   label?: string;
   dateLocale: string;
+  average: number;
   consumptionLabel: string;
-  avgLabel: string;
+  vsAverageLabel: string;
+  distanceLabel: string;
+  drivesLabel: string;
 }
 
-function ConsumptionTooltip({ active, payload, label, dateLocale, consumptionLabel, avgLabel }: ConsumptionTooltipProps) {
+function ConsumptionTooltip({
+  active,
+  payload,
+  label,
+  dateLocale,
+  average,
+  consumptionLabel,
+  vsAverageLabel,
+  distanceLabel,
+  drivesLabel,
+}: ConsumptionTooltipProps) {
   if (!active || !payload?.length || !label) return null;
+  const point = payload[0].payload;
   const formatted = new Date(label + "T00:00:00").toLocaleDateString(dateLocale, {
     day: "numeric",
     month: "short",
   });
+  const diff = point.avg_consumption !== null && average > 0 ? point.avg_consumption - average : null;
   return (
     <div className="rounded-lg border bg-card p-3 shadow-md">
       <p className="text-xs text-muted-foreground mb-1">{formatted}</p>
-      {payload.map((entry) => (
-        <p key={entry.dataKey} className="text-sm font-medium">
-          {entry.dataKey === "avg_consumption"
-            ? `${consumptionLabel}: ${entry.value} kWh/100km`
-            : `${avgLabel}: ${entry.value} kWh/100km`}
+      {point.avg_consumption !== null && (
+        <p className="text-sm font-medium">
+          {consumptionLabel}: {point.avg_consumption.toFixed(1)} kWh/100km
         </p>
-      ))}
+      )}
+      {diff !== null && (
+        <p className={`text-xs font-medium ${diff > 0 ? "text-red-400" : "text-green-400"}`}>
+          {diff > 0 ? "+" : ""}
+          {diff.toFixed(1)} {vsAverageLabel}
+        </p>
+      )}
+      <p className="text-xs text-muted-foreground mt-1">
+        {distanceLabel}: {Number(point.total_distance_km).toFixed(1)} km · {point.drive_count} {drivesLabel}
+      </p>
     </div>
   );
 }
@@ -107,18 +134,30 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
 
   const isLoading = tab === "battery" ? batteryLoading : consumptionLoading;
 
-  // Compute average consumption
-  const avgConsumption =
-    consumptionData && consumptionData.length > 0
-      ? consumptionData.reduce((sum, d) => sum + Number(d.avg_consumption), 0) / consumptionData.length
-      : 0;
+  // PostgreSQL numerics arrive as strings: convert once for the chart
+  const consumptionPoints: ConsumptionChartPoint[] = (consumptionData ?? []).map((d) => ({
+    ...d,
+    avg_consumption: d.avg_consumption === null ? null : Number(d.avg_consumption),
+  }));
 
-  // Compute Y domain for consumption chart with headroom
-  const maxConsumption =
-    consumptionData && consumptionData.length > 0
-      ? Math.max(...consumptionData.map((d) => Number(d.avg_consumption)))
-      : 20;
-  const yMax = Math.ceil(Math.max(maxConsumption, avgConsumption) / 2) * 2 + 4;
+  // Period average weighted by distance (total energy / total distance), not a mean of daily values
+  const weightedDays = consumptionPoints.filter(
+    (d) => d.avg_consumption !== null && Number(d.consumption_distance_km) > 0
+  );
+  const weightedDistance = weightedDays.reduce((sum, d) => sum + Number(d.consumption_distance_km), 0);
+  const avgConsumption =
+    weightedDistance > 0
+      ? weightedDays.reduce((sum, d) => sum + (d.avg_consumption ?? 0) * Number(d.consumption_distance_km), 0) /
+        weightedDistance
+      : 0;
+  const totalDistance = consumptionPoints.reduce((sum, d) => sum + Number(d.total_distance_km), 0);
+  const totalDrives = consumptionPoints.reduce((sum, d) => sum + Number(d.drive_count), 0);
+
+  // Y axis with headroom and round ticks (0, 5, 10... or 0, 10, 20...)
+  const maxConsumption = Math.max(avgConsumption, ...consumptionPoints.map((d) => d.avg_consumption ?? 0));
+  const yStep = maxConsumption > 30 ? 10 : 5;
+  const yMax = Math.max(yStep, Math.ceil((maxConsumption * 1.1) / yStep) * yStep);
+  const yTicks = Array.from({ length: yMax / yStep + 1 }, (_, i) => i * yStep);
 
   const title = tab === "battery"
     ? t("battery.tabBattery") + " (7 " + (locale === "fr" ? "jours" : "days") + ")"
@@ -216,60 +255,81 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
               {t("battery.noData")}
             </p>
           )
-        ) : consumptionData && consumptionData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={consumptionData}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(217, 33%, 17%)"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="day"
-                tickFormatter={formatAxisDate}
-                stroke="hsl(215, 20%, 45%)"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                domain={[0, yMax]}
-                tickFormatter={(v: number) => `${v}`}
-                stroke="hsl(215, 20%, 45%)"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                width={40}
-              />
-              <Tooltip
-                content={
-                  <ConsumptionTooltip
-                    dateLocale={dateLocale}
-                    consumptionLabel={t("battery.tooltipConsumption")}
-                    avgLabel={locale === "fr" ? "Moyenne" : "Average"}
+        ) : consumptionPoints.length > 0 ? (
+          <>
+            {/* Period average, matching the dashed line on the chart */}
+            <div className="h-[52px]">
+              {avgConsumption > 0 && (
+                <>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-bold text-foreground">{avgConsumption.toFixed(1)}</span>
+                    <span className="text-sm text-muted-foreground">kWh/100km</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="inline-block w-4 border-t-2 border-dashed" style={{ borderColor: AVG_COLOR }} />
+                    <span>
+                      {t("battery.avgPeriod")} · {Math.round(totalDistance)} km · {totalDrives} {t("battery.drives")}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+            <ResponsiveContainer width="100%" height={228}>
+              <BarChart data={consumptionPoints}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="hsl(217, 33%, 17%)"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="day"
+                  tickFormatter={formatAxisDate}
+                  stroke="hsl(215, 20%, 45%)"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  domain={[0, yMax]}
+                  ticks={yTicks}
+                  tickFormatter={(v: number) => `${v}`}
+                  stroke="hsl(215, 20%, 45%)"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  width={40}
+                />
+                <Tooltip
+                  cursor={{ fill: "hsl(217, 33%, 17%)", opacity: 0.4 }}
+                  content={
+                    <ConsumptionTooltip
+                      dateLocale={dateLocale}
+                      average={avgConsumption}
+                      consumptionLabel={t("battery.tooltipConsumption")}
+                      vsAverageLabel={t("battery.vsAverage")}
+                      distanceLabel={t("battery.tooltipDistance")}
+                      drivesLabel={t("battery.drives")}
+                    />
+                  }
+                />
+                <Bar
+                  dataKey="avg_consumption"
+                  fill="hsl(142, 71%, 45%)"
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={40}
+                />
+                {avgConsumption > 0 && (
+                  <ReferenceLine
+                    y={Number(avgConsumption.toFixed(1))}
+                    stroke={AVG_COLOR}
+                    strokeDasharray="6 3"
+                    strokeWidth={1.5}
+                    ifOverflow="extendDomain"
                   />
-                }
-              />
-              <ReferenceLine
-                y={Number(avgConsumption.toFixed(1))}
-                stroke="hsl(48, 96%, 53%)"
-                strokeDasharray="6 3"
-                strokeWidth={1.5}
-                label={{
-                  value: `${locale === "fr" ? "Moy" : "Avg"}: ${avgConsumption.toFixed(1)}`,
-                  position: "right",
-                  fill: "hsl(48, 96%, 53%)",
-                  fontSize: 11,
-                }}
-              />
-              <Bar
-                dataKey="avg_consumption"
-                fill="hsl(142, 71%, 45%)"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={40}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+                )}
+              </BarChart>
+            </ResponsiveContainer>
+          </>
         ) : (
           <p className="text-center text-muted-foreground py-8">
             {t("battery.noData")}

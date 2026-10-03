@@ -99,7 +99,8 @@ export interface DriveActivity {
 
 export interface ConsumptionPoint {
   day: string;
-  avg_consumption: string;
+  avg_consumption: string | null;
+  consumption_distance_km: string | null;
   total_distance_km: string;
   drive_count: string;
 }

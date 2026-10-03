@@ -84,6 +84,9 @@ export const translations = {
     "battery.tooltipRange": "Autonomie",
     "battery.tooltipConsumption": "Consommation",
     "battery.tooltipDistance": "Distance",
+    "battery.vsAverage": "vs moyenne",
+    "battery.avgPeriod": "moyenne sur 7 jours",
+    "battery.drives": "trajets",
 
     // Heatmap
     "heatmap.title": "Activit\u00e9 (15 jours)",
@@ -192,6 +195,9 @@ export const translations = {
     "battery.tooltipRange": "Range",
     "battery.tooltipConsumption": "Consumption",
     "battery.tooltipDistance": "Distance",
+    "battery.vsAverage": "vs average",
+    "battery.avgPeriod": "7-day average",
+    "battery.drives": "drives",
 
     // Heatmap
     "heatmap.title": "Activity (15 days)",

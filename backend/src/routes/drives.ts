@@ -132,15 +132,17 @@ router.get("/consumption-history", async (req: Request, res: Response) => {
       `
       SELECT
         TO_CHAR(d.start_date::date, 'YYYY-MM-DD') AS day,
+        -- Total energy / total distance (distance-weighted), so a short trip
+        -- doesn't weigh as much as a long one. Drives that gained range are excluded.
         ROUND(
-          AVG(
-            CASE
-              WHEN d.start_ideal_range_km > d.end_ideal_range_km AND d.distance > 0
-              THEN ((d.start_ideal_range_km - d.end_ideal_range_km) * c.efficiency) / d.distance * 100
-              ELSE NULL
-            END
+          (
+            SUM((d.start_ideal_range_km - d.end_ideal_range_km) * c.efficiency)
+              FILTER (WHERE d.start_ideal_range_km > d.end_ideal_range_km)
+            / NULLIF(SUM(d.distance) FILTER (WHERE d.start_ideal_range_km > d.end_ideal_range_km), 0)
+            * 100
           )::numeric, 1
         ) AS avg_consumption,
+        ROUND((SUM(d.distance) FILTER (WHERE d.start_ideal_range_km > d.end_ideal_range_km))::numeric, 1) AS consumption_distance_km,
         ROUND(SUM(d.distance)::numeric, 1) AS total_distance_km,
         COUNT(*) AS drive_count
       FROM drives d
