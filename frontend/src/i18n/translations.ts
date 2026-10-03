@@ -91,9 +91,11 @@ export const translations = {
     "battery.drives": "trajets",
 
     // Heatmap
-    "heatmap.title": "Activit\u00e9 (15 jours)",
+    "heatmap.title": "Activit\u00e9 (30 jours)",
     "heatmap.drives": "trajets",
     "heatmap.noActivity": "Aucune activit\u00e9",
+    "heatmap.distance": "parcourus",
+    "heatmap.activeDays": "jours roul\u00e9s",
 
     // Weather
     "weather.title": "M\u00e9t\u00e9o",
@@ -204,9 +206,11 @@ export const translations = {
     "battery.drives": "drives",
 
     // Heatmap
-    "heatmap.title": "Activity (15 days)",
+    "heatmap.title": "Activity (30 days)",
     "heatmap.drives": "drives",
     "heatmap.noActivity": "No activity",
+    "heatmap.distance": "driven",
+    "heatmap.activeDays": "active days",
 
     // Weather
     "weather.title": "Weather",

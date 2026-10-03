@@ -216,11 +216,11 @@ export const demoTopDestinations = [
   { address: "Boulevard Saint-Germain, Paris, \u00cele-de-France, France", visit_count: "11", avg_distance_km: "5.2" },
 ];
 
-// Drive activity heatmap (last 15 days)
+// Drive activity heatmap (last 30 days)
 const generateDriveActivity = () => {
   const activity = [];
   const now = new Date();
-  for (let i = 14; i >= 0; i--) {
+  for (let i = 29; i >= 0; i--) {
     const day = new Date(now);
     day.setDate(day.getDate() - i);
     const dayStr = day.toISOString().split("T")[0];
@@ -410,7 +410,7 @@ export const demoCar2TopDestinations = [
 const generateCar2DriveActivity = () => {
   const activity = [];
   const now = new Date();
-  for (let i = 14; i >= 0; i--) {
+  for (let i = 29; i >= 0; i--) {
     const day = new Date(now);
     day.setDate(day.getDate() - i);
     const dayStr = day.toISOString().split("T")[0];

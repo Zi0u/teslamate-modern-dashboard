@@ -3,15 +3,22 @@ import { Skeleton } from "./ui/skeleton";
 import { useDriveActivity } from "../hooks/useApi";
 import { useTranslation } from "../i18n/LanguageContext";
 
-function intensityColor(count: number) {
-  if (count === 0) return "bg-muted/30";
-  if (count === 1) return "bg-emerald-500/20";
-  if (count <= 3) return "bg-emerald-500/40";
-  return "bg-emerald-500/70";
+const DAYS = 30;
+
+// Intensity by distance driven (km), more telling than the number of drives
+const LEVELS = [
+  { min: 100, className: "bg-emerald-500/80", label: "100+" },
+  { min: 50, className: "bg-emerald-500/55", label: "50" },
+  { min: 20, className: "bg-emerald-500/35", label: "20" },
+  { min: 0.1, className: "bg-emerald-500/20", label: "0" },
+];
+
+function intensityClass(distance: number) {
+  return LEVELS.find((l) => distance >= l.min)?.className ?? "bg-muted/30";
 }
 
 export function DriveHeatmap({ carId = 1 }: { carId?: number }) {
-  const { data, isLoading, error } = useDriveActivity(15, carId);
+  const { data, isLoading, error } = useDriveActivity(DAYS, carId);
   const { locale, t } = useTranslation();
 
   const dateLocale = locale === "fr" ? "fr-FR" : "en-GB";
@@ -23,7 +30,7 @@ export function DriveHeatmap({ carId = 1 }: { carId?: number }) {
           <CardTitle>{t("heatmap.title")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-20 w-full" />
         </CardContent>
       </Card>
     );
@@ -36,10 +43,10 @@ export function DriveHeatmap({ carId = 1 }: { carId?: number }) {
     (data || []).map((d) => [d.day, d])
   );
 
-  // Generate last 15 days
+  // Generate last N days (local date keys, see CLAUDE.md pitfall #9)
   const days = [];
   const now = new Date();
-  for (let i = 14; i >= 0; i--) {
+  for (let i = DAYS - 1; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -47,47 +54,93 @@ export function DriveHeatmap({ carId = 1 }: { carId?: number }) {
     days.push({
       date: d,
       key,
+      isToday: i === 0,
       count: activity ? Number(activity.drive_count) : 0,
       distance: activity ? Number(activity.total_distance_km) : 0,
     });
   }
 
+  const totalDistance = days.reduce((sum, d) => sum + d.distance, 0);
+  const totalDrives = days.reduce((sum, d) => sum + d.count, 0);
+  const activeDays = days.filter((d) => d.count > 0).length;
+
+  const summary = [
+    { value: `${Math.round(totalDistance).toLocaleString(dateLocale)} km`, label: t("heatmap.distance") },
+    { value: totalDrives, label: t("heatmap.drives") },
+    { value: `${activeDays}/${DAYS}`, label: t("heatmap.activeDays") },
+  ];
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-base font-semibold text-foreground">
-          {t("heatmap.title")}
-        </CardTitle>
+      <CardHeader className="pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+          <CardTitle className="text-base font-semibold text-foreground">
+            {t("heatmap.title")}
+          </CardTitle>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+            {summary.map((s) => (
+              <div key={s.label} className="flex items-baseline gap-1.5 whitespace-nowrap">
+                <span className="text-sm font-bold text-foreground">{s.value}</span>
+                <span className="text-xs text-muted-foreground">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-1">
-          {days.map((day) => (
-            <div key={day.key} className="flex-1 flex flex-col items-center gap-1">
-              <span className="text-[9px] text-muted-foreground">
-                {day.date.toLocaleDateString(dateLocale, { weekday: "narrow" })}
-              </span>
-              <div
-                className={`w-full aspect-square rounded-sm ${intensityColor(day.count)} border border-border/50`}
-                title={
-                  day.count > 0
-                    ? `${day.count} ${t("heatmap.drives")} — ${day.distance.toFixed(1)} km`
-                    : t("heatmap.noActivity")
-                }
-              />
-              <span className="text-[8px] text-muted-foreground">
-                {day.date.getDate()}
-              </span>
-            </div>
-          ))}
+        <div className="grid grid-cols-10 gap-1.5 sm:grid-cols-[repeat(15,minmax(0,1fr))] lg:grid-cols-[repeat(30,minmax(0,1fr))]">
+          {days.map((day, index) => {
+            const isWeekend = day.date.getDay() === 0 || day.date.getDay() === 6;
+            // Show the month name on the first cell and whenever the month changes
+            const showMonth = index === 0 || day.date.getDate() === 1;
+            return (
+              <div key={day.key} className="group relative flex flex-col items-center gap-1">
+                <span className={`text-[10px] ${isWeekend ? "text-muted-foreground/60" : "text-muted-foreground"}`}>
+                  {day.date.toLocaleDateString(dateLocale, { weekday: "narrow" })}
+                </span>
+                <div
+                  className={`flex h-10 w-full items-center justify-center rounded-md border border-border/50 ${intensityClass(day.distance)} ${
+                    day.isToday ? "ring-2 ring-primary ring-offset-1 ring-offset-card" : ""
+                  }`}
+                >
+                  {day.distance > 0 && (
+                    <span className="hidden text-[10px] font-medium text-foreground/90 xl:inline">
+                      {Math.round(day.distance)}
+                    </span>
+                  )}
+                </div>
+                <span className={`text-[10px] ${day.isToday ? "font-bold text-foreground" : "text-muted-foreground"}`}>
+                  {day.date.getDate()}
+                </span>
+                {showMonth && (
+                  <span className="text-[9px] uppercase tracking-wide text-muted-foreground/70 -mt-1">
+                    {day.date.toLocaleDateString(dateLocale, { month: "short" })}
+                  </span>
+                )}
+
+                {/* Hover details */}
+                <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded-lg border bg-card px-3 py-2 shadow-md group-hover:block">
+                  <p className="text-xs text-muted-foreground">
+                    {day.date.toLocaleDateString(dateLocale, { weekday: "long", day: "numeric", month: "long" })}
+                  </p>
+                  <p className="text-sm font-medium">
+                    {day.count > 0
+                      ? `${day.distance.toFixed(1)} km · ${day.count} ${t("heatmap.drives")}`
+                      : t("heatmap.noActivity")}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
         {/* Legend */}
-        <div className="flex items-center justify-end gap-1 mt-2">
-          <span className="text-[9px] text-muted-foreground">0</span>
-          <div className="w-2.5 h-2.5 rounded-sm bg-muted/30 border border-border/50" />
-          <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500/20 border border-border/50" />
-          <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500/40 border border-border/50" />
-          <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500/70 border border-border/50" />
-          <span className="text-[9px] text-muted-foreground">4+</span>
+        <div className="mt-3 flex items-center justify-end gap-1.5">
+          <span className="text-[10px] text-muted-foreground">0 km</span>
+          <div className="h-3 w-3 rounded-sm border border-border/50 bg-muted/30" />
+          {[...LEVELS].reverse().map((l) => (
+            <div key={l.label} className={`h-3 w-3 rounded-sm border border-border/50 ${l.className}`} />
+          ))}
+          <span className="text-[10px] text-muted-foreground">100+ km</span>
         </div>
       </CardContent>
     </Card>

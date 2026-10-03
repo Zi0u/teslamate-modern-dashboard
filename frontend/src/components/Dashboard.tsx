@@ -296,11 +296,10 @@ export function Dashboard() {
 
       <main className="px-4 py-6 sm:px-6 pb-16">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* Column 1: Map (with weather) + Stats + Heatmap */}
+          {/* Column 1: Map (with weather) + Stats */}
           <div className="space-y-6">
             <CarMap carId={selectedCarId} />
             <MonthlyStats carId={selectedCarId} />
-            <DriveHeatmap carId={selectedCarId} />
           </div>
 
           {/* Columns 2-3: Battery health + Last charge (top), Battery chart with tabs (bottom) */}
@@ -329,6 +328,11 @@ export function Dashboard() {
           <div className="space-y-6">
             <RecentDrives carId={selectedCarId} />
             <TopDestinations carId={selectedCarId} />
+          </div>
+
+          {/* Full width: 30-day driving activity */}
+          <div className="md:col-span-2 lg:col-span-4">
+            <DriveHeatmap carId={selectedCarId} />
           </div>
         </div>
       </main>
