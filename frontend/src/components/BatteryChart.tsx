@@ -203,7 +203,7 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
       <CardContent className="flex flex-1 flex-col">
         {tab === "battery" ? (
           batteryData && batteryData.length > 0 ? (
-            <div className="relative min-h-[280px] flex-1">
+            <div className="relative min-h-[280px] flex-1 lg:min-h-[200px]">
             {/* Absolute so the chart never feeds back into the container height */}
             <ResponsiveContainer width="100%" height="100%" className="absolute inset-0">
               <AreaChart data={batteryData}>
@@ -278,7 +278,7 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
                 </>
               )}
             </div>
-            <div className="relative min-h-[228px] flex-1">
+            <div className="relative min-h-[228px] flex-1 lg:min-h-[148px]">
             {/* Absolute so the chart never feeds back into the container height */}
             <ResponsiveContainer width="100%" height="100%" className="absolute inset-0">
               <BarChart data={consumptionPoints}>

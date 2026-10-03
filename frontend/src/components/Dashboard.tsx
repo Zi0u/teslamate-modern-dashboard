@@ -323,10 +323,12 @@ export function Dashboard() {
             </div>
           </div>
 
-          {/* Column 4: Recent drives + Top destinations */}
-          <div className="space-y-6">
+          {/* Column 4: Recent drives + Top destinations (stretched to the bottom of columns 1-3) */}
+          <div className="flex flex-col gap-6">
             <RecentDrives carId={selectedCarId} />
-            <TopDestinations carId={selectedCarId} />
+            <div className="flex flex-1 flex-col [&>*]:flex-1">
+              <TopDestinations carId={selectedCarId} />
+            </div>
           </div>
 
           {/* Full width: 30-day driving activity */}

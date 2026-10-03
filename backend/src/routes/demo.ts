@@ -20,6 +20,7 @@ import {
   demoCar2DriveActivity,
   demoConsumptionHistory,
   demoCar2ConsumptionHistory,
+ demoFuelPrices,
 } from "../data/demo";
 
 const router = Router();
@@ -75,6 +76,11 @@ router.get("/charges/current", (req: Request, res: Response) => {
   } else {
     res.status(404).json({ error: "Not charging" });
   }
+});
+
+// Fuel prices (for the "vs gasoline/diesel" comparison)
+router.get("/fuel-prices", (_req: Request, res: Response) => {
+  res.json(demoFuelPrices);
 });
 
 // Battery health

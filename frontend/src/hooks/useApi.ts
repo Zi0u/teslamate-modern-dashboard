@@ -12,6 +12,7 @@ import type {
   DriveActivity,
   ConsumptionPoint,
   CurrentWeather,
+  FuelPrices,
 } from "../types";
 
 const API_BASE = "/api";
@@ -77,6 +78,16 @@ export function useLastCharge(carId = 1) {
     queryKey: ["charges", "last", carId],
     queryFn: () => fetchJson(`/charges/last?car_id=${carId}`),
     refetchInterval: 300_000,
+  });
+}
+
+// Average fuel prices for the "vs gasoline/diesel" comparison (backend caches 6h)
+export function useFuelPrices() {
+  return useQuery<FuelPrices>({
+    queryKey: ["fuel-prices"],
+    queryFn: () => fetchJson("/fuel-prices"),
+    staleTime: 3_600_000,
+    refetchInterval: 3_600_000,
   });
 }
 

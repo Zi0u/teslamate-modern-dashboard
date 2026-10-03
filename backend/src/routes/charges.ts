@@ -20,10 +20,40 @@ router.get("/last", async (req: Request, res: Response) => {
         cp.cost,
         cp.start_rated_range_km,
         cp.end_rated_range_km,
-        a.display_name AS address
+        a.display_name AS address,
+        -- ISO country code from the geocoding data (language-independent, e.g. "fr"):
+        -- the French average fuel price only applies to charges in France
+        LOWER(a.raw->'address'->>'country_code') AS country_code,
+        g.name AS geofence,
+        ch.max_power_kw,
+        ch.is_dc,
+        -- Real-world consumption over the last 30 days (kWh/100km), to turn the
+        -- energy added into real kilometers (same formula as the stats)
+        (
+          SELECT ROUND((
+            SUM((d.start_ideal_range_km - d.end_ideal_range_km) * c.efficiency)
+              FILTER (WHERE d.start_ideal_range_km > d.end_ideal_range_km)
+            / NULLIF(SUM(d.distance) FILTER (WHERE d.start_ideal_range_km > d.end_ideal_range_km), 0)
+            * 100
+          )::numeric, 1)
+          FROM drives d
+          JOIN cars c ON c.id = d.car_id
+          WHERE d.car_id = $1
+            AND d.start_date >= NOW() - interval '30 days'
+            AND d.distance > 0
+        ) AS consumption_30d_kwh_100km
       FROM charging_processes cp
       LEFT JOIN addresses a ON a.id = cp.address_id
+      LEFT JOIN geofences g ON g.id = cp.geofence_id
+      LEFT JOIN LATERAL (
+        SELECT
+          MAX(charger_power) AS max_power_kw,
+          COALESCE(bool_or(fast_charger_present), false) AS is_dc
+        FROM charges
+        WHERE charging_process_id = cp.id
+      ) ch ON true
       WHERE cp.car_id = $1
+        AND cp.end_date IS NOT NULL
       ORDER BY cp.start_date DESC
       LIMIT 1
       `,

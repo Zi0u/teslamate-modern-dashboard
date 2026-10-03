@@ -94,13 +94,14 @@ export function BatteryHealthGauge({ carId = 1 }: { carId?: number }) {
   }
 
   return (
-    <Card>
+    <Card className="flex flex-col">
       <CardHeader>
         <CardTitle className="text-base font-semibold text-foreground">
           {t("health.title")}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      {/* Centered vertically when the row is taller than the gauge */}
+      <CardContent className="flex flex-1 flex-col justify-center">
         <GaugeArc pct={Number(data.battery_health_pct)} />
 
         <div className="grid grid-cols-2 gap-3 mt-4">

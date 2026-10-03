@@ -102,7 +102,12 @@ export const demoLastCharge = {
   cost: "9.55",
   start_rated_range_km: "96.80",
   end_rated_range_km: "395.10",
-  address: "Superchargeur Tesla, Paris, France",
+  address: "12, Rue de Rivoli, Paris, France",
+  country_code: "fr",
+  geofence: "Maison",
+  max_power_kw: 7,
+  is_dc: false,
+  consumption_30d_kwh_100km: "14.8",
 };
 
 const generateDrives = () => {
@@ -308,11 +313,22 @@ export const demoCar2LastCharge = {
   charge_energy_used: "54.00",
   start_battery_level: 15,
   end_battery_level: 90,
-  duration_min: 480,
-  cost: "13.03",
+  duration_min: 38,
+  cost: "22.68",
   start_rated_range_km: "70.40",
   end_rated_range_km: "421.80",
   address: "Superchargeur Tesla, Vélizy, France",
+  country_code: "fr",
+  geofence: null,
+  max_power_kw: 171,
+  is_dc: true,
+  consumption_30d_kwh_100km: "17.2",
+};
+
+export const demoFuelPrices = {
+  gasoline: 2.164,
+  diesel: 2.377,
+  updated_at: new Date().toISOString(),
 };
 
 const generateCar2Drives = () => {

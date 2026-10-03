@@ -10,6 +10,7 @@ import statsRoutes from "./routes/stats";
 import batteryRoutes from "./routes/battery";
 import chargesRoutes from "./routes/charges";
 import demoRoutes from "./routes/demo";
+import fuelRoutes from "./routes/fuel";
 
 const app = express();
 const PORT = env.PORT;
@@ -44,6 +45,7 @@ if (env.DEMO_MODE) {
   app.use("/api/stats", statsRoutes);
   app.use("/api/battery", batteryRoutes);
   app.use("/api/charges", chargesRoutes);
+  app.use("/api/fuel-prices", fuelRoutes);
 
   // Grafana URL from TeslaMate settings
   app.get("/api/settings/grafana-url", async (_req, res) => {

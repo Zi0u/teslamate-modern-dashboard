@@ -66,6 +66,18 @@ export interface LastCharge {
   start_rated_range_km: number;
   end_rated_range_km: number;
   address: string | null;
+  country_code: string | null;
+  geofence: string | null;
+  max_power_kw: number | null;
+  is_dc: boolean;
+  consumption_30d_kwh_100km: string | null;
+}
+
+// French national average prices (EUR/L), null when unavailable
+export interface FuelPrices {
+  gasoline: number | null;
+  diesel: number | null;
+  updated_at: string | null;
 }
 
 export interface CurrentCharge {

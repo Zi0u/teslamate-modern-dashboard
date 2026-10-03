@@ -25,13 +25,13 @@ This serves mock data on `http://localhost:5173` — no database required.
 ## Features
 
 - **Live vehicle status** — battery level, firmware version, state (online/driving/charging/asleep)
-- **Interactive map** — current position with integrated weather
+- **Interactive map** — OpenStreetMap, follows the car in real time while driving, with integrated weather
 - **Driving stats** — weekly, monthly, and last month summaries (distance, energy, cost)
 - **Recent drives** — last 10 trips with consumption details
 - **Battery health** — degradation gauge based on capacity data
-- **Last charge** — energy added, duration, cost, range gained
+- **Last charge** — energy added, duration, average power, cost per kWh, range gained, and cost compared to a gasoline/diesel car (French national average fuel prices, or your own prices set in the dashboard)
 - **Battery & consumption charts** — 7-day history with tabbed views
-- **Drive heatmap** — 15-day activity overview (GitHub-style)
+- **Drive activity** — 30-day overview colored by distance driven
 - **Top destinations** — most visited places
 - **Bilingual** — French & English with one-click toggle
 - **Dark mode** — always on, easy on the eyes
