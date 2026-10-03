@@ -62,23 +62,24 @@ export function RecentDrives({ carId = 1 }: { carId?: number }) {
   }
 
   return (
-    <Card>
+    <Card className="flex flex-col">
       <CardHeader>
         <CardTitle className="text-base font-semibold text-foreground">
           {t("drives.title")}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      {/* When the card is taller than the list, the rows spread evenly over the height */}
+      <CardContent className="flex flex-1 flex-col">
         {data.length === 0 ? (
           <p className="text-center text-muted-foreground py-4 text-sm">
             {t("drives.noData")}
           </p>
         ) : (
-          <div className="relative max-h-[250px] sm:max-h-none overflow-y-auto">
+          <div className="relative flex flex-1 flex-col max-h-[250px] sm:max-h-none overflow-y-auto">
             {/* Main timeline line */}
             <div className="absolute left-[28px] top-3 bottom-3 w-px border-l border-dashed border-muted-foreground/30" />
 
-            <div className="space-y-3">
+            <div className="flex flex-1 flex-col justify-between gap-3">
               {data.map((drive) => (
                 <div key={drive.id} className="relative flex gap-3">
                   {/* Timeline: date badge (fixed width so every row lines up, centered on the timeline) */}

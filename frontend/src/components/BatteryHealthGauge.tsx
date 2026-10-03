@@ -3,62 +3,9 @@ import { Skeleton } from "./ui/skeleton";
 import { useBatteryHealth } from "../hooks/useApi";
 import { useTranslation } from "../i18n/LanguageContext";
 
-function GaugeArc({ pct }: { pct: number }) {
-  // Semi-circle gauge from 180° to 0° (left to right)
-  const radius = 70;
-  const cx = 80;
-  const cy = 80;
-  const strokeWidth = 12;
-
-  // Background arc (full semi-circle)
-  const bgStart = { x: cx - radius, y: cy };
-  const bgEnd = { x: cx + radius, y: cy };
-  const bgPath = `M ${bgStart.x} ${bgStart.y} A ${radius} ${radius} 0 0 1 ${bgEnd.x} ${bgEnd.y}`;
-
-  // Value arc (partial)
-  const angle = Math.PI * (1 - pct / 100);
-  const valEnd = {
-    x: cx + radius * Math.cos(angle),
-    y: cy - radius * Math.sin(angle),
-  };
-  const valPath = `M ${bgStart.x} ${bgStart.y} A ${radius} ${radius} 0 0 1 ${valEnd.x} ${valEnd.y}`;
-
-  // Color based on health
-  const color =
-    pct >= 95
-      ? "hsl(142, 71%, 45%)"
-      : pct >= 85
-        ? "hsl(48, 96%, 53%)"
-        : "hsl(0, 84%, 60%)";
-
-  return (
-    <svg viewBox="0 0 160 95" className="w-full max-w-[200px] mx-auto">
-      <path
-        d={bgPath}
-        fill="none"
-        stroke="hsl(217, 33%, 17%)"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-      />
-      <path
-        d={valPath}
-        fill="none"
-        stroke={color}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-      />
-      <text
-        x={cx}
-        y={cy - 10}
-        textAnchor="middle"
-        className="text-2xl font-bold"
-        fill="currentColor"
-        fontSize="24"
-      >
-        {pct.toFixed(1)}%
-      </text>
-    </svg>
-  );
+// Color based on health
+function healthColor(pct: number) {
+  return pct >= 95 ? "hsl(142, 71%, 45%)" : pct >= 85 ? "hsl(48, 96%, 53%)" : "hsl(0, 84%, 60%)";
 }
 
 export function BatteryHealthGauge({ carId = 1 }: { carId?: number }) {
@@ -93,34 +40,50 @@ export function BatteryHealthGauge({ carId = 1 }: { carId?: number }) {
     );
   }
 
+  const pct = Number(data.battery_health_pct);
+  const color = healthColor(pct);
+
+  const label = `${pct.toLocaleString(numLocale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`;
+
+  // Battery-shaped bar with the health percentage inside, then the two details on one line
   return (
-    <Card className="flex flex-col">
-      <CardHeader>
+    <Card>
+      <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold text-foreground">
           {t("health.title")}
         </CardTitle>
       </CardHeader>
-      {/* Centered vertically when the row is taller than the gauge */}
-      <CardContent className="flex flex-1 flex-col justify-center">
-        <GaugeArc pct={Number(data.battery_health_pct)} />
-
-        <div className="grid grid-cols-2 gap-3 mt-4">
-          <div className="rounded-lg border bg-muted/30 p-2.5 text-center">
-            <p className="text-xs text-muted-foreground mb-0.5">
-              {t("health.degradation")}
-            </p>
-            <p className="text-sm font-bold text-red-400">
-              -{Number(data.degradation_pct).toFixed(1)}%
-            </p>
+      <CardContent>
+        <div className="flex items-center" role="meter" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={t("health.title")}>
+          {/* Battery body */}
+          <div className="relative h-9 flex-1 rounded-lg border-2 border-muted-foreground/40 p-[3px]">
+            <div
+              className="h-full rounded-[5px]"
+              style={{
+                width: `${Math.min(Math.max(pct, 0), 100)}%`,
+                background: `linear-gradient(180deg, ${color}, color-mix(in srgb, ${color} 75%, black))`,
+              }}
+            />
+            <span className="absolute inset-0 flex items-center justify-center text-base font-bold tabular-nums text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.5)]">
+              {label}
+            </span>
           </div>
-          <div className="rounded-lg border bg-muted/30 p-2.5 text-center">
-            <p className="text-xs text-muted-foreground mb-0.5">
-              {t("health.current")}
-            </p>
-            <p className="text-sm font-bold">
+          {/* Battery terminal */}
+          <div className="h-3.5 w-1.5 rounded-r-sm bg-muted-foreground/40" />
+        </div>
+        <div className="mt-2.5 flex items-baseline justify-between gap-2 text-xs">
+          <span className="text-muted-foreground">
+            {t("health.degradation")}{" "}
+            <span className="font-bold text-red-400">
+              -{Number(data.degradation_pct).toLocaleString(numLocale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %
+            </span>
+          </span>
+          <span className="text-muted-foreground">
+            {t("health.currentShort")}{" "}
+            <span className="font-bold text-foreground">
               {Math.round(Number(data.current_range_km)).toLocaleString(numLocale)} km
-            </p>
-          </div>
+            </span>
+          </span>
         </div>
       </CardContent>
     </Card>

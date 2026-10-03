@@ -39,7 +39,7 @@ export const translations = {
     "health.title": "Sant\u00e9 de la batterie",
     "health.degradation": "D\u00e9gradation",
     "health.original": "Autonomie neuve",
-    "health.current": "Autonomie actuelle",
+    "health.currentShort": "Autonomie",
     "health.loadError": "Donn\u00e9es indisponibles",
 
     // Last charge
@@ -173,7 +173,7 @@ export const translations = {
     "health.title": "Battery health",
     "health.degradation": "Degradation",
     "health.original": "Original range",
-    "health.current": "Current range",
+    "health.currentShort": "Range",
     "health.loadError": "Data unavailable",
 
     // Last charge
