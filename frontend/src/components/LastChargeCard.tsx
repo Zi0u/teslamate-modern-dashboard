@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Zap, Clock, Gauge, MapPin, Settings2, Info } from "lucide-react";
+import { Zap, Clock, Gauge, MapPin, Settings2, Info, Calculator } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 import { useFuelPrices, useLastCharge } from "../hooks/useApi";
@@ -272,6 +272,10 @@ const FUEL_COLOR = { gasoline: "bg-orange-500", diesel: "bg-amber-700" } as cons
 type Fuel = (typeof FUELS)[number];
 type CustomPrices = Partial<Record<Fuel, number>>;
 
+// Official French open data the national average comes from (fetched by the backend, cached 6h)
+const FUEL_DATA_URL =
+  "https://data.economie.gouv.fr/explore/dataset/prix-des-carburants-en-france-flux-instantane-v2/";
+
 // The viewer's own fuel prices, kept in this browser only (localStorage survives restarts)
 const PRICES_STORAGE_KEY = "lastCharge.fuelPrices";
 
@@ -372,13 +376,28 @@ function FuelComparison({
   // Prices used + the (highlighted) button to set them
   const pricesBar = (
     <div className="mb-3 flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 px-2.5 py-1.5">
-      <span className="min-w-0 truncate text-xs text-muted-foreground">
+      <span className="min-w-0 text-xs text-muted-foreground">
         {fuels.length > 0 ? (
           <>
             <span className="text-foreground/90">
               {fuels.map((f) => `${fuelLabel(f.fuel)} ${numberFormat(f.price, 2)} €/L`).join(" · ")}
             </span>{" "}
-            ({t(hasCustom ? "charge.fuelCustom" : "charge.fuelNational")})
+            {hasCustom ? (
+              `(${t("charge.fuelCustom")})`
+            ) : (
+              // Where the average comes from (official French open data, refreshed automatically), on its own line
+              <span className="mt-0.5 block text-[11px]">
+                {t("charge.fuelNationalSource")}{" "}
+                <a
+                  href={FUEL_DATA_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground/80 underline decoration-dotted underline-offset-2 hover:text-primary"
+                >
+                  data.economie.gouv.fr
+                </a>
+              </span>
+            )}
           </>
         ) : (
           t("charge.fuelNoPriceShort")
@@ -494,6 +513,17 @@ function FuelComparison({
         ))}
       </div>
 
+      {/* Electric cost per 100 km, shown once (it doesn't depend on the fuel compared) */}
+      {cost != null && (
+        <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <Zap className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+          {t("charge.electricPer100")}
+          <span>
+            <span className="font-semibold tabular-nums text-emerald-400">{numberFormat((cost / realKm) * 100, 2)} €</span>/100 km
+          </span>
+        </p>
+      )}
+
       {/* Savings vs each fuel */}
       {cost != null ? (
         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -502,9 +532,8 @@ function FuelComparison({
             const cheaper = difference >= 0;
             // Share of the combustion cost saved (or extra paid)
             const percent = f.cost > 0 ? Math.round((Math.abs(difference) / f.cost) * 100) : 0;
-            // Cost per 100 km: combustion -> electric
+            // Combustion cost per 100 km (the electric one is shown once, under the bars)
             const fuelPer100 = (f.cost / realKm) * 100;
-            const electricPer100 = (cost / realKm) * 100;
             return (
               <div key={f.fuel} className="rounded-lg border bg-muted/30 p-2.5">
                 <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
@@ -531,8 +560,7 @@ function FuelComparison({
                 <div className="mt-1.5 border-t border-border/50 pt-1.5 text-[11px] text-muted-foreground">
                   <p className="text-[10px]">{t("charge.costPer100")}</p>
                   <p className="tabular-nums">
-                    {numberFormat(fuelPer100, 2)} € →{" "}
-                    <span className="font-semibold text-foreground">{numberFormat(electricPer100, 2)} €</span>/100 km
+                    <span className="font-semibold text-foreground">{numberFormat(fuelPer100, 2)} €</span>/100 km
                   </p>
                 </div>
               </div>
@@ -543,9 +571,19 @@ function FuelComparison({
         <p className="mt-3 text-[10px] text-muted-foreground">{t("charge.costUnknown")}</p>
       )}
 
-      <p className="mt-2 text-[10px] text-muted-foreground">
-        ≈ {realKm} km{realKmLabel ? ` ${realKmLabel}` : ""} ·{" "}
-        {fuels.map((f) => `${fuelLabel(f.fuel)} ${numberFormat(FUEL_CONSUMPTION[f.fuel], 1)} L/100`).join(" · ")}
+      {/* Calculation assumptions: the distance every figure above is based on + combustion consumption */}
+      <p className="mt-3 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 rounded-lg border bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
+        <Calculator className="h-3.5 w-3.5 shrink-0 text-primary" />
+        {t("charge.calcBasis")}
+        <span className="font-semibold text-foreground">
+          ≈ {realKm} km{realKmLabel ? ` ${realKmLabel}` : ""}
+        </span>
+        <span>
+          ·{" "}
+          {fuels
+            .map((f) => `${fuelLabel(f.fuel).toLocaleLowerCase(locale)} ${numberFormat(FUEL_CONSUMPTION[f.fuel], 1)} L/100`)
+            .join(" · ")}
+        </span>
       </p>
     </div>
   );
