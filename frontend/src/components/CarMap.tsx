@@ -33,6 +33,8 @@ export function CarMap({ carId = 1 }: { carId?: number }) {
   useEffect(() => {
     if (!hasPosition || !mapRef.current) return;
 
+    let resizeObserver: ResizeObserver | undefined;
+
     // Load Leaflet CSS if not already loaded
     if (!document.querySelector('link[href*="leaflet.css"]')) {
       const link = document.createElement("link");
@@ -79,6 +81,10 @@ export function CarMap({ carId = 1 }: { carId?: number }) {
       markerRef.current = L.marker([0, 0], { icon: carIcon }).addTo(map);
       mapInstanceRef.current = map;
       setMapReady(true);
+
+      // The container height follows the grid row: tell Leaflet when it changes
+      resizeObserver = new ResizeObserver(() => map.invalidateSize());
+      resizeObserver.observe(mapRef.current);
     };
 
     if (!(window as typeof window & { L?: unknown }).L) {
@@ -91,6 +97,7 @@ export function CarMap({ carId = 1 }: { carId?: number }) {
     }
 
     return () => {
+      resizeObserver?.disconnect();
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -137,7 +144,7 @@ export function CarMap({ carId = 1 }: { carId?: number }) {
   const dateLocale = locale === "fr" ? "fr-FR" : "en-GB";
 
   return (
-    <Card>
+    <Card className="flex flex-col">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold text-foreground">
@@ -158,10 +165,11 @@ export function CarMap({ carId = 1 }: { carId?: number }) {
           })()}
         </div>
       </CardHeader>
-      <CardContent>
+      {/* Map grows to fill the card when the row is taller (cards on a row share the same height) */}
+      <CardContent className="flex flex-1 flex-col">
         <div
           ref={mapRef}
-          className="car-map w-full h-48 rounded-md border overflow-hidden"
+          className="car-map w-full flex-1 min-h-48 rounded-md border overflow-hidden"
         />
         <p className="text-xs text-muted-foreground mt-2">
           {t("map.lastUpdate")}: {new Date(car.last_update).toLocaleString(dateLocale)}

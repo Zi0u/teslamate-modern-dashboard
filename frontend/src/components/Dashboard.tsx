@@ -296,32 +296,31 @@ export function Dashboard() {
 
       <main className="px-4 py-6 sm:px-6 pb-16">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* Column 1: Map (with weather) + Stats */}
-          <div className="space-y-6">
+          {/* Columns 1-3: one grid so cards on the same row share the same height
+              (map, battery health and last charge bottoms line up) */}
+          <div className="grid grid-cols-1 gap-6 md:col-span-2 md:grid-cols-2 lg:col-span-3 lg:grid-cols-3">
             <CarMap carId={selectedCarId} />
-            <MonthlyStats carId={selectedCarId} />
-          </div>
-
-          {/* Columns 2-3: Battery health + Last charge (top), Battery chart with tabs (bottom) */}
-          <div className="md:col-span-2 space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <BatteryHealthGauge carId={selectedCarId} />
-              {isLoading || !car ? (
-                <Card>
-                  <CardHeader>
-                    <Skeleton className="h-5 w-32" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-32 w-full" />
-                  </CardContent>
-                </Card>
-              ) : car.state === "charging" ? (
-                <CurrentChargeCard carId={selectedCarId} />
-              ) : (
-                <LastChargeCard carId={selectedCarId} />
-              )}
+            <BatteryHealthGauge carId={selectedCarId} />
+            {isLoading || !car ? (
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-5 w-32" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-32 w-full" />
+                </CardContent>
+              </Card>
+            ) : car.state === "charging" ? (
+              <CurrentChargeCard carId={selectedCarId} />
+            ) : (
+              <LastChargeCard carId={selectedCarId} />
+            )}
+            <div className="self-start">
+              <MonthlyStats carId={selectedCarId} />
             </div>
-            <BatteryChart carId={selectedCarId} />
+            <div className="md:col-span-2">
+              <BatteryChart carId={selectedCarId} />
+            </div>
           </div>
 
           {/* Column 4: Recent drives + Top destinations */}

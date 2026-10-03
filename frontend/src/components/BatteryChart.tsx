@@ -165,7 +165,7 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="h-full">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
         </CardHeader>
@@ -177,7 +177,7 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
   }
 
   return (
-    <Card>
+    <Card className="flex h-full flex-col">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold text-foreground">
@@ -199,10 +199,13 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      {/* Chart grows to fill the card when the grid row is taller (bottom aligned with column 4) */}
+      <CardContent className="flex flex-1 flex-col">
         {tab === "battery" ? (
           batteryData && batteryData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={280}>
+            <div className="relative min-h-[280px] flex-1">
+            {/* Absolute so the chart never feeds back into the container height */}
+            <ResponsiveContainer width="100%" height="100%" className="absolute inset-0">
               <AreaChart data={batteryData}>
                 <defs>
                   <linearGradient id="batteryGradient" x1="0" y1="0" x2="0" y2="1">
@@ -250,13 +253,14 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
                 />
               </AreaChart>
             </ResponsiveContainer>
+            </div>
           ) : (
             <p className="text-center text-muted-foreground py-8">
               {t("battery.noData")}
             </p>
           )
         ) : consumptionPoints.length > 0 ? (
-          <>
+          <div className="flex flex-1 flex-col">
             {/* Period average, matching the dashed line on the chart */}
             <div className="h-[52px]">
               {avgConsumption > 0 && (
@@ -274,7 +278,9 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
                 </>
               )}
             </div>
-            <ResponsiveContainer width="100%" height={228}>
+            <div className="relative min-h-[228px] flex-1">
+            {/* Absolute so the chart never feeds back into the container height */}
+            <ResponsiveContainer width="100%" height="100%" className="absolute inset-0">
               <BarChart data={consumptionPoints}>
                 <CartesianGrid
                   strokeDasharray="3 3"
@@ -329,7 +335,8 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
                 )}
               </BarChart>
             </ResponsiveContainer>
-          </>
+            </div>
+          </div>
         ) : (
           <p className="text-center text-muted-foreground py-8">
             {t("battery.noData")}
