@@ -134,7 +134,9 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
 
   const isLoading = tab === "battery" ? batteryLoading : consumptionLoading;
 
-  // PostgreSQL numerics arrive as strings: convert once for the chart
+  // PostgreSQL numerics arrive as strings: convert once for the chart.
+  // Days can have drives but no consumption (car efficiency not computed yet by TeslaMate):
+  // the chart is only shown when at least one day has a value, else "no data".
   const consumptionPoints: ConsumptionChartPoint[] = (consumptionData ?? []).map((d) => ({
     ...d,
     avg_consumption: d.avg_consumption === null ? null : Number(d.avg_consumption),
@@ -255,11 +257,11 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
             </ResponsiveContainer>
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="my-auto text-center text-muted-foreground py-8">
               {t("battery.noData")}
             </p>
           )
-        ) : consumptionPoints.length > 0 ? (
+        ) : consumptionPoints.some((d) => d.avg_consumption !== null) ? (
           <div className="flex flex-1 flex-col">
             {/* Period average, matching the dashed line on the chart */}
             <div className="h-[52px]">
@@ -338,7 +340,7 @@ export function BatteryChart({ carId = 1 }: { carId?: number }) {
             </div>
           </div>
         ) : (
-          <p className="text-center text-muted-foreground py-8">
+          <p className="my-auto text-center text-muted-foreground py-8">
             {t("battery.noData")}
           </p>
         )}
