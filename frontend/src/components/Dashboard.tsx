@@ -202,7 +202,7 @@ export function Dashboard() {
             <h1 className="text-lg sm:text-xl font-bold tracking-tight">
               TeslaMate Modern Dashboard
               {/* Dashboard version (from package.json, injected at build time) */}
-              <span className="ml-2 inline-block rounded-md border px-1.5 py-0.5 align-middle text-[10px] font-medium tracking-normal text-muted-foreground">
+              <span className="ml-1 align-baseline text-xs font-medium tracking-normal text-muted-foreground">
                 v{__APP_VERSION__}
               </span>
             </h1>
