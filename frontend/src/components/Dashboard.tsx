@@ -358,27 +358,33 @@ export function Dashboard() {
               </div>
             )}
 
-            {/* 3 columns (1/4 · 1/2 · 1/4). Row 1: map + battery health + stats line up with recent drives.
-                Row 2: top destinations under the drives (empty under the stats).
-                The middle column spans both rows; the last card of each cell stretches
-                ([&>*]:flex-1) so the bottoms line up. */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[auto_1fr_auto]">
-              {/* Column 1, row 1: Map (with weather, grows) + Battery health + Stats */}
-              <div className="flex flex-col gap-6 lg:col-start-1 lg:row-start-1">
+            {/* 3 columns (1/4 · 1/2 · 1/4) on shared grid rows, each card filling its cell
+                ([&>*]:flex-1) so bottoms line up:
+                row 1: map + battery health | last charge | recent drives (rows 1-2)
+                row 2: stats                | chart (rows 2-3)
+                row 3:                      |                | top destinations
+                Explicit md/lg placement, DOM order kept for mobile (single column). */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[auto_auto_1fr_auto]">
+              {/* Map (with weather, grows) + battery health: bottom aligned with the last charge */}
+              <div className="flex flex-col gap-6 md:col-start-1 md:row-start-1 lg:col-start-1 lg:row-start-1">
                 <div className="flex flex-1 flex-col [&>*]:flex-1">
                   <CarMap carId={selectedCarId} />
                 </div>
                 <BatteryHealthGauge carId={selectedCarId} />
+              </div>
+
+              {/* Stats: bottom aligned with recent drives */}
+              <div className="flex flex-col [&>*]:flex-1 md:col-start-1 md:row-start-2 lg:col-start-1 lg:row-start-2">
                 <MonthlyStats carId={selectedCarId} />
               </div>
 
-              {/* Column 3, row 1: Recent drives (before column 2 in the DOM so tablets show it next to the map) */}
-              <div className="flex flex-col [&>*]:flex-1 lg:col-start-4 lg:row-start-1">
+              {/* Recent drives, next to the first column */}
+              <div className="flex flex-col [&>*]:flex-1 md:col-start-2 md:row-span-2 md:row-start-1 lg:col-start-4 lg:row-span-2 lg:row-start-1">
                 <RecentDrives carId={selectedCarId} />
               </div>
 
-              {/* Column 2 (double width, both rows): Last charge (or live charge) + chart */}
-              <div className="flex flex-col gap-6 md:col-span-2 lg:col-span-2 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+              {/* Last charge (double width) */}
+              <div className="flex flex-col [&>*]:flex-1 md:col-span-2 md:row-start-3 lg:col-span-2 lg:col-start-2 lg:row-start-1">
                 {isLoading || !car ? (
                   <Card>
                     <CardHeader>
@@ -391,18 +397,20 @@ export function Dashboard() {
                 ) : (
                   <LastChargeCard carId={selectedCarId} />
                 )}
-                <div className="flex flex-1 flex-col [&>*]:flex-1">
-                  <BatteryChart carId={selectedCarId} />
-                </div>
               </div>
 
-              {/* Column 3, row 2: Top destinations */}
-              <div className="flex flex-col [&>*]:flex-1 md:col-span-2 lg:col-span-1 lg:col-start-4 lg:row-start-2">
+              {/* Battery / consumption chart (double width): bottom aligned with top destinations */}
+              <div className="flex flex-col [&>*]:flex-1 md:col-span-2 md:row-start-4 lg:col-span-2 lg:col-start-2 lg:row-span-2 lg:row-start-2">
+                <BatteryChart carId={selectedCarId} />
+              </div>
+
+              {/* Top destinations */}
+              <div className="flex flex-col [&>*]:flex-1 md:col-span-2 md:row-start-5 lg:col-span-1 lg:col-start-4 lg:row-start-3">
                 <TopDestinations carId={selectedCarId} />
               </div>
 
               {/* Full width: 30-day driving activity */}
-              <div className="md:col-span-2 lg:col-span-4 lg:row-start-3">
+              <div className="md:col-span-2 md:row-start-6 lg:col-span-4 lg:row-start-4">
                 <DriveHeatmap carId={selectedCarId} />
               </div>
             </div>
