@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Zap, Clock, Gauge, MapPin, Settings2, Info, Calculator, BatteryCharging } from "lucide-react";
+import { Zap, Clock, Gauge, MapPin, Settings2, Calculator, BatteryCharging } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 import { isNotFound, useFuelPrices, useLastCharge } from "../hooks/useApi";
-import { FUEL_COLOR, FUEL_CONSUMPTION, FUEL_DATA_URL, FUELS, parsePrice, useCustomFuelPrices, type Fuel, type CustomPrices } from "../lib/fuel";
+import { FUEL_COLOR, FUEL_CONSUMPTION, FUEL_DATA_URL, FUELS, useCustomFuelPrices, type Fuel } from "../lib/fuel";
+import { FuelPriceEditor } from "./FuelPriceEditor";
 import { useTranslation } from "../i18n/LanguageContext";
 
 function formatDuration(minutes: number) {
@@ -292,9 +293,8 @@ function FuelComparison({
 }) {
   const { locale, t } = useTranslation();
   const { data: nationalPrices } = useFuelPrices();
-  const [customPrices, saveCustomPrices] = useCustomFuelPrices();
+  const [customPrices] = useCustomFuelPrices();
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState<Record<Fuel, string>>({ gasoline: "", diesel: "" });
 
   const inFrance = countryCode === "fr";
   // Country name in the UI language (e.g. "es" -> "Espagne"), whatever TeslaMate's geocoding language
@@ -311,28 +311,7 @@ function FuelComparison({
   const euros = (value: number) => `${numberFormat(value, 2)} €`;
   const hasCustom = Object.keys(customPrices).length > 0;
 
-  const openSettings = () => {
-    setDraft({
-      gasoline: customPrices.gasoline != null ? numberFormat(customPrices.gasoline, 3) : "",
-      diesel: customPrices.diesel != null ? numberFormat(customPrices.diesel, 3) : "",
-    });
-    setEditing(true);
-  };
-
-  const saveSettings = () => {
-    const next: CustomPrices = {};
-    for (const f of FUELS) {
-      const price = parsePrice(draft[f]);
-      if (price) next[f] = price;
-    }
-    saveCustomPrices(next);
-    setEditing(false);
-  };
-
-  const resetSettings = () => {
-    saveCustomPrices({});
-    setEditing(false);
-  };
+  const openSettings = () => setEditing(true);
 
   // One line per fuel that has a price (custom first, else France average)
   const fuels = FUELS.flatMap((f) => {
@@ -386,58 +365,20 @@ function FuelComparison({
     </div>
   );
 
-  // Price settings, saved in this browser
-  if (editing) {
-    return (
-      <div>
-        {pricesBar}
-        <div className="rounded-lg border bg-muted/30 p-3 space-y-2.5">
-          <p className="flex items-start gap-2 rounded-md border border-primary/30 bg-primary/10 p-2 text-xs text-foreground/90">
-            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-            {t("charge.fuelSettingsHint")}
-          </p>
-          {FUELS.map((f) => (
-            <label key={f} className="flex items-center justify-between gap-3 text-xs">
-              <span className="text-muted-foreground">{fuelLabel(f)}</span>
-              <span className="flex items-center gap-1.5">
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={draft[f]}
-                  onChange={(e) => setDraft({ ...draft, [f]: e.target.value })}
-                  placeholder={nationalPrice(f) != null ? numberFormat(nationalPrice(f)!, 3) : "—"}
-                  className="w-20 rounded-md border bg-background px-2 py-1 text-right text-xs tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-                <span className="text-muted-foreground">€/L</span>
-              </span>
-            </label>
-          ))}
-          <div className="flex items-center justify-end gap-2 pt-1">
-            {hasCustom && (
-              <button
-                onClick={resetSettings}
-                className="rounded-md px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
-              >
-                {t("charge.fuelReset")}
-              </button>
-            )}
-            <button
-              onClick={saveSettings}
-              className="rounded-md bg-primary px-3 py-1 text-[10px] font-medium text-primary-foreground hover:bg-primary/90 cursor-pointer"
-            >
-              {t("charge.fuelSave")}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Price settings dialog, saved in this browser
+  const priceEditor = editing && (
+    <FuelPriceEditor
+      placeholders={{ gasoline: nationalPrice("gasoline"), diesel: nationalPrice("diesel") }}
+      onDone={() => setEditing(false)}
+    />
+  );
 
   // No price (charge outside France without custom prices, or API down): invite to set one
   if (fuels.length === 0) {
     return (
       <div>
         {pricesBar}
+        {priceEditor}
         <div className="rounded-lg border border-dashed p-4 text-center">
           <p className="text-xs text-muted-foreground mb-2">
             {!inFrance && countryName ? `${t("charge.fuelChargedIn")} (${countryName}). ` : ""}
@@ -468,6 +409,7 @@ function FuelComparison({
   return (
     <div>
       {pricesBar}
+      {priceEditor}
 
       {/* Cost bars: electric, then gasoline, then diesel */}
       <div className="space-y-2">

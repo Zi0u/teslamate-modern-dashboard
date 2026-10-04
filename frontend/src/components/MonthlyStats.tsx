@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Route, Zap, Fuel, Hash, PiggyBank } from "lucide-react";
+import { Route, Zap, Fuel, Hash, PiggyBank, Settings2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 import { useFuelPrices, usePeriodStats } from "../hooks/useApi";
 import { FUEL_COLOR, FUEL_CONSUMPTION, FUELS, useCustomFuelPrices } from "../lib/fuel";
+import { FuelPriceEditor } from "./FuelPriceEditor";
 import { useTranslation } from "../i18n/LanguageContext";
 
 type Period = "week" | "month" | "last_month" | "year";
@@ -14,6 +15,8 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
   const { locale, t } = useTranslation();
   const { data: nationalPrices } = useFuelPrices();
   const [customPrices] = useCustomFuelPrices();
+  // Fuel price editor, shared with the last charge "Savings" tab (same prices, synced)
+  const [editingPrices, setEditingPrices] = useState(false);
 
   const periods: { value: Period; label: string }[] = [
     { value: "week", label: t("stats.week") },
@@ -67,8 +70,15 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
   const savingsConsumption = Number(data.savings_consumption_kwh_100km ?? 0);
   const allInFrance = costedCount > 0 && Number(data.costed_charges_in_france ?? 0) === costedCount;
   const realKm = savingsConsumption > 0 ? (costedEnergy / savingsConsumption) * 100 : null;
+  const autoPrice = (fuel: (typeof FUELS)[number]) => (allInFrance ? nationalPrices?.[fuel] ?? null : null);
+  // Prices used for the savings, shown next to the "Prices" button
+  const usedPrices = FUELS.flatMap((fuel) => {
+    const price = customPrices[fuel] ?? autoPrice(fuel);
+    return price == null ? [] : [`${t(fuel === "gasoline" ? "charge.gasoline" : "charge.diesel")} ${formatNumber(price, 2)} €/L`];
+  });
+  const hasCustomPrices = Object.keys(customPrices).length > 0;
   const savingsRows = FUELS.map((fuel) => {
-    const price = customPrices[fuel] ?? (allInFrance ? nationalPrices?.[fuel] ?? null : null);
+    const price = customPrices[fuel] ?? autoPrice(fuel);
     const label = `${t("stats.savingsVs")} ${t(fuel === "gasoline" ? "charge.gasoline" : "charge.diesel").toLocaleLowerCase(locale)}`;
     const base = { icon: PiggyBank, label, dot: FUEL_COLOR[fuel] };
     if (costedCount === 0) return { ...base, value: "—", sub: chargeCount === 0 ? t("stats.noCharge") : t("stats.costNotSet") };
@@ -172,6 +182,31 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
             </span>
           </div>
         ))}
+
+        {/* Fuel prices used for the savings + button to change them */}
+        <div className="flex items-center justify-between gap-2 pt-1.5 text-[10px] text-muted-foreground">
+          <span className="min-w-0 truncate">
+            {usedPrices.length > 0
+              ? `${usedPrices.join(" · ")} (${t(hasCustomPrices ? "charge.fuelCustom" : "stats.franceAverage")})`
+              : t("charge.fuelNoPriceShort")}
+          </span>
+          <button
+            onClick={() => setEditingPrices(!editingPrices)}
+            className={`flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium transition-colors cursor-pointer ${
+              editingPrices ? "bg-muted text-foreground" : "bg-primary text-primary-foreground hover:bg-primary/90"
+            }`}
+          >
+            <Settings2 className="h-3 w-3" />
+            {t("charge.fuelPrices")}
+          </button>
+        </div>
+        {editingPrices && (
+          <FuelPriceEditor
+            // Hints: the French average (used automatically for charges in France)
+            placeholders={{ gasoline: nationalPrices?.gasoline ?? null, diesel: nationalPrices?.diesel ?? null }}
+            onDone={() => setEditingPrices(false)}
+          />
+        )}
       </CardContent>
     </Card>
   );
