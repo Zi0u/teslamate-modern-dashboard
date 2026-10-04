@@ -5,6 +5,7 @@ import { Skeleton } from "./ui/skeleton";
 import { useFuelPrices, usePeriodStats } from "../hooks/useApi";
 import { FUEL_COLOR, FUEL_CONSUMPTION, FUELS, useCustomFuelPrices } from "../lib/fuel";
 import { FuelPriceEditor } from "./FuelPriceEditor";
+import { currencySymbol, formatMoney, useCurrency } from "../lib/currency";
 import { useTranslation } from "../i18n/LanguageContext";
 
 type Period = "week" | "month" | "last_month" | "year";
@@ -15,6 +16,7 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
   const { locale, t } = useTranslation();
   const { data: nationalPrices } = useFuelPrices();
   const [customPrices] = useCustomFuelPrices();
+  const [currency] = useCurrency();
   // Fuel price editor, shared with the last charge "Savings" tab (same prices, synced)
   const [editingPrices, setEditingPrices] = useState(false);
 
@@ -70,11 +72,14 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
   const savingsConsumption = Number(data.savings_consumption_kwh_100km ?? 0);
   const allInFrance = costedCount > 0 && Number(data.costed_charges_in_france ?? 0) === costedCount;
   const realKm = savingsConsumption > 0 ? (costedEnergy / savingsConsumption) * 100 : null;
-  const autoPrice = (fuel: (typeof FUELS)[number]) => (allInFrance ? nationalPrices?.[fuel] ?? null : null);
+  // The French average is in euros: only used when all those charges were in France and € is selected
+  const autoPrice = (fuel: (typeof FUELS)[number]) =>
+    allInFrance && currency === "EUR" ? nationalPrices?.[fuel] ?? null : null;
+  const currencySign = currencySymbol(currency, numLocale);
   // Prices used for the savings, shown next to the "Prices" button
   const usedPrices = FUELS.flatMap((fuel) => {
     const price = customPrices[fuel] ?? autoPrice(fuel);
-    return price == null ? [] : [`${t(fuel === "gasoline" ? "charge.gasoline" : "charge.diesel")} ${formatNumber(price, 2)} €/L`];
+    return price == null ? [] : [`${t(fuel === "gasoline" ? "charge.gasoline" : "charge.diesel")} ${formatNumber(price, 2)} ${currencySign}/L`];
   });
   const hasCustomPrices = Object.keys(customPrices).length > 0;
   const savingsRows = FUELS.map((fuel) => {
@@ -88,7 +93,7 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
     const savings = fuelCost - Number(data.total_cost ?? 0);
     return {
       ...base,
-      value: `${costPartial ? "≈ " : ""}${formatNumber(savings, 0)} €`,
+      value: `${costPartial ? "≈ " : ""}${formatMoney(savings, numLocale, currency, 0)}`,
       valueClass: savings >= 0 ? "text-emerald-400" : "text-red-400",
       sub: fuelCost > 0 ? `${savings >= 0 ? "−" : "+"}${Math.round((Math.abs(savings) / fuelCost) * 100)} %` : "",
       hint: costPartial ? t("stats.savingsPartialHint") : undefined,
@@ -126,7 +131,7 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
     {
       icon: Hash,
       label: t("stats.energyCost"),
-      value: costUnknown ? "N/A" : `${formatNumber(Number(data.total_cost), 2)} €`,
+      value: costUnknown ? "N/A" : formatMoney(Number(data.total_cost), numLocale, currency),
       sub: costUnknown
         ? t("stats.costNotSet")
         : costPartial

@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Info, X, Fuel as FuelIcon } from "lucide-react";
 import { useTranslation } from "../i18n/LanguageContext";
 import { FUEL_DATA_URL, FUELS, parsePrice, useCustomFuelPrices, type CustomPrices, type Fuel } from "../lib/fuel";
+import { CURRENCIES, currencySymbol, useCurrency, type Currency } from "../lib/currency";
 
 // Dialog to set the viewer's own fuel prices (saved in this browser). Shared by the last charge
 // "Savings" tab and the stats card: saving here updates both right away (useCustomFuelPrices).
@@ -25,6 +26,15 @@ export function FuelPriceEditor({
     diesel: customPrices.diesel != null ? format(customPrices.diesel) : "",
   });
   const hasCustom = Object.keys(customPrices).length > 0;
+  // Display currency (symbol only, no conversion), saved with the prices
+  const [currency, saveCurrency] = useCurrency();
+  const [draftCurrency, setDraftCurrency] = useState<Currency>(currency);
+  const currencySign = currencySymbol(draftCurrency, numLocale);
+  // The automatic French average is in euros: not offered with another currency
+  const autoPrice = (f: Fuel) => (draftCurrency === "EUR" ? placeholders[f] ?? null : null);
+  // Unambiguous labels for the currency buttons ("US$" vs "CA$")
+  const currencyLabel = (c: Currency) =>
+    new Intl.NumberFormat("en-GB", { style: "currency", currency: c }).formatToParts(0).find((p) => p.type === "currency")?.value ?? c;
   // A non-empty field that isn't a valid price blocks saving (instead of silently dropping it)
   const invalid = (f: Fuel) => draft[f].trim() !== "" && parsePrice(draft[f]) === undefined;
   const hasInvalid = FUELS.some(invalid);
@@ -53,11 +63,14 @@ export function FuelPriceEditor({
       if (price) next[f] = price;
     }
     saveCustomPrices(next);
+    saveCurrency(draftCurrency);
     onDone();
   };
 
+  // Back to the automatic prices (the currency picked in the dialog is kept too)
   const reset = () => {
     saveCustomPrices({});
+    saveCurrency(draftCurrency);
     onDone();
   };
 
@@ -107,15 +120,39 @@ export function FuelPriceEditor({
               </li>
             </ul>
           </div>
+          {/* Currency: changes the symbol everywhere (costs are already in the user's currency in TeslaMate) */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className="text-foreground">{t("charge.currency")}</span>
+              <div className="flex items-center gap-0.5 rounded-full border p-0.5">
+                {CURRENCIES.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setDraftCurrency(c)}
+                    title={c}
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors cursor-pointer ${
+                      draftCurrency === c
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {currencyLabel(c)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">{t("charge.currencyHint")}</p>
+          </div>
+
           {FUELS.map((f, i) => (
             <label key={f} className="flex items-center justify-between gap-3 text-sm">
               <span className="flex flex-col">
                 <span className="text-foreground">{t(f === "gasoline" ? "charge.gasoline" : "charge.diesel")}</span>
                 {/* The automatic price this field overrides */}
                 <span className="text-[11px] text-muted-foreground">
-                  {placeholders[f] != null
-                    ? `${t("charge.fuelAutoPrice")} ${format(placeholders[f]!)} €/L`
-                    : t("charge.fuelNoAutoPrice")}
+                  {autoPrice(f) != null
+                    ? `${t("charge.fuelAutoPrice")} ${format(autoPrice(f)!)} ${currencySign}/L`
+                    : t(draftCurrency === "EUR" ? "charge.fuelNoAutoPrice" : "charge.fuelNoAutoPriceCurrency")}
                 </span>
               </span>
               <span className="flex items-center gap-1.5">
@@ -126,13 +163,13 @@ export function FuelPriceEditor({
                   value={draft[f]}
                   onChange={(e) => setDraft({ ...draft, [f]: e.target.value })}
                   onKeyDown={(e) => e.key === "Enter" && !hasInvalid && save()}
-                  placeholder={placeholders[f] != null ? format(placeholders[f]!) : "—"}
+                  placeholder={autoPrice(f) != null ? format(autoPrice(f)!) : "—"}
                   aria-invalid={invalid(f)}
                   className={`w-24 rounded-md border bg-background px-2 py-1.5 text-right text-sm tabular-nums focus:outline-none focus:ring-1 ${
                     invalid(f) ? "border-red-500 focus:ring-red-500" : "focus:ring-primary"
                   }`}
                 />
-                <span className="text-muted-foreground">€/L</span>
+                <span className="w-10 text-muted-foreground">{currencySign}/L</span>
               </span>
             </label>
           ))}

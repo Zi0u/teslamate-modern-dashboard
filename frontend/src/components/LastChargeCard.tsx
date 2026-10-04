@@ -5,6 +5,7 @@ import { Skeleton } from "./ui/skeleton";
 import { isNotFound, useFuelPrices, useLastCharge } from "../hooks/useApi";
 import { FUEL_COLOR, FUEL_CONSUMPTION, FUEL_DATA_URL, FUELS, useCustomFuelPrices, type Fuel } from "../lib/fuel";
 import { FuelPriceEditor } from "./FuelPriceEditor";
+import { currencySymbol, formatMoney, useCurrency } from "../lib/currency";
 import { useTranslation } from "../i18n/LanguageContext";
 
 function formatDuration(minutes: number) {
@@ -30,6 +31,7 @@ export function LastChargeCard({ carId = 1 }: { carId?: number }) {
   const { data, isLoading, error } = useLastCharge(carId);
   const { locale, t } = useTranslation();
   const [tab, setTab] = useState<"details" | "compare">("details");
+  const [currency] = useCurrency();
 
   const numLocale = locale === "fr" ? "fr-FR" : "en-GB";
 
@@ -69,7 +71,8 @@ export function LastChargeCard({ carId = 1 }: { carId?: number }) {
 
   const numberFormat = (value: number, digits: number) =>
     value.toLocaleString(numLocale, { minimumFractionDigits: digits, maximumFractionDigits: digits });
-  const euros = (value: number) => `${numberFormat(value, 2)} €`;
+  const euros = (value: number) => formatMoney(value, numLocale, currency);
+  const currencySign = currencySymbol(currency, numLocale);
 
   const energyAdded = Number(data.charge_energy_added);
   const energyUsed = data.charge_energy_used != null ? Number(data.charge_energy_used) : null;
@@ -232,7 +235,7 @@ export function LastChargeCard({ carId = 1 }: { carId?: number }) {
                   {cost != null ? euros(cost) : "—"}
                 </p>
                 <p className="text-xs font-medium text-foreground/80 tabular-nums">
-                  {pricePerKwh != null ? `${numberFormat(pricePerKwh, 3)} €/kWh` : t("charge.costNotSet")}
+                  {pricePerKwh != null ? `${numberFormat(pricePerKwh, 3)} ${currencySign}/kWh` : t("charge.costNotSet")}
                 </p>
               </div>
             </div>
@@ -294,7 +297,10 @@ function FuelComparison({
   const { locale, t } = useTranslation();
   const { data: nationalPrices } = useFuelPrices();
   const [customPrices] = useCustomFuelPrices();
+  const [currency] = useCurrency();
   const [editing, setEditing] = useState(false);
+  const numLocale = locale === "fr" ? "fr-FR" : "en-GB";
+  const currencySign = currencySymbol(currency, numLocale);
 
   const inFrance = countryCode === "fr";
   // Country name in the UI language (e.g. "es" -> "Espagne"), whatever TeslaMate's geocoding language
@@ -306,9 +312,10 @@ function FuelComparison({
     }
   })();
 
-  const nationalPrice = (f: Fuel) => (inFrance ? nationalPrices?.[f] ?? null : null);
+  // The French average is in euros: only used for charges in France with the euro selected
+  const nationalPrice = (f: Fuel) => (inFrance && currency === "EUR" ? nationalPrices?.[f] ?? null : null);
   const fuelLabel = (f: Fuel) => t(f === "gasoline" ? "charge.gasoline" : "charge.diesel");
-  const euros = (value: number) => `${numberFormat(value, 2)} €`;
+  const euros = (value: number) => formatMoney(value, numLocale, currency);
   const hasCustom = Object.keys(customPrices).length > 0;
 
   const openSettings = () => setEditing(true);
@@ -328,7 +335,7 @@ function FuelComparison({
         {fuels.length > 0 ? (
           <>
             <span className="text-foreground/90">
-              {fuels.map((f) => `${fuelLabel(f.fuel)} ${numberFormat(f.price, 2)} €/L`).join(" · ")}
+              {fuels.map((f) => `${fuelLabel(f.fuel)} ${numberFormat(f.price, 2)} ${currencySign}/L`).join(" · ")}
             </span>{" "}
             {hasCustom ? (
               `(${t("charge.fuelCustom")})`
@@ -430,7 +437,7 @@ function FuelComparison({
           <Zap className="h-3.5 w-3.5 shrink-0 text-sky-400" />
           {t("charge.electricPer100")}
           <span>
-            <span className="font-semibold tabular-nums text-sky-400">{numberFormat((cost / realKm) * 100, 2)} €</span>/100 km
+            <span className="font-semibold tabular-nums text-sky-400">{euros((cost / realKm) * 100)}</span>/100 km
           </span>
         </p>
       )}
@@ -471,7 +478,7 @@ function FuelComparison({
                 <div className="mt-1.5 border-t border-border/50 pt-1.5 text-[11px] text-muted-foreground">
                   <p className="text-[10px]">{t("charge.costPer100")}</p>
                   <p className="tabular-nums">
-                    <span className="font-semibold text-foreground">{numberFormat(fuelPer100, 2)} €</span>/100 km
+                    <span className="font-semibold text-foreground">{euros(fuelPer100)}</span>/100 km
                   </p>
                 </div>
               </div>

@@ -44,7 +44,10 @@ const CONTENT = {
         "Santé de la batterie",
         "capacité actuelle (moyenne des 100 dernières mesures) ÷ capacité maximale observée, comme le dashboard Grafana de TeslaMate.",
       ],
-      ["Coûts", "ceux renseignés dans TeslaMate (tarifs des geo-fences). Les charges sans coût sont signalées."],
+      [
+        "Coûts",
+        "ceux renseignés dans TeslaMate (tarifs des geo-fences). Les charges sans coût sont signalées. La devise affichée se choisit dans la fenêtre « Prix » (symbole seulement, sans conversion).",
+      ],
       ["Jours et mois", "découpés à minuit dans le fuseau horaire de votre navigateur."],
     ],
     privacyTitle: "Vos données",
@@ -91,7 +94,10 @@ const CONTENT = {
         "Battery health",
         "current capacity (average of the last 100 readings) ÷ highest capacity observed, like TeslaMate's Grafana dashboard.",
       ],
-      ["Costs", "the ones set in TeslaMate (geo-fence prices). Charges without a cost are flagged."],
+      [
+        "Costs",
+        "the ones set in TeslaMate (geo-fence prices). Charges without a cost are flagged. The displayed currency is picked in the \"Prices\" dialog (symbol only, no conversion).",
+      ],
       ["Days and months", "cut at midnight in your browser's time zone."],
     ],
     privacyTitle: "Your data",
