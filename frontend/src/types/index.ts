@@ -120,6 +120,11 @@ export interface DriveActivity {
   day: string;
   drive_count: string;
   total_distance_km: string;
+  // Charges started that day (cost null when none of them has a price in TeslaMate)
+  charge_count?: string;
+  costed_charge_count?: string;
+  charge_cost?: string | null;
+  charge_energy_kwh?: string | null;
 }
 
 export interface ConsumptionPoint {

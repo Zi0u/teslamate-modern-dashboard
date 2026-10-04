@@ -17,6 +17,8 @@ import { LastChargeCard } from "./LastChargeCard";
 import { CurrentChargeCard } from "./CurrentChargeCard";
 import { GrafanaNav } from "./GrafanaNav";
 import { AboutModal } from "./AboutModal";
+import { DayDetailCard } from "./DayDetailCard";
+import { localDayKey } from "../lib/day";
 import type { TranslationKey } from "../i18n/translations";
 
 const pillBase = "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium whitespace-nowrap";
@@ -181,6 +183,10 @@ export function Dashboard() {
   const selectedCarId =
     pickedCarId != null && cars?.some((c) => c.id === pickedCarId) ? pickedCarId : cars?.[0]?.id ?? null;
   const { data: car, isLoading } = useCarStatus(selectedCarId ?? undefined);
+  // Day shown in the "Day details" card, picked in the activity heatmap; today by default,
+  // and back to today when another car is selected
+  const [pickedDay, setPickedDay] = useState<{ carId: number | null; day: string } | null>(null);
+  const selectedDay = pickedDay && pickedDay.carId === selectedCarId ? pickedDay.day : localDayKey(new Date());
   const { data: settingsData } = useGrafanaUrl();
 
   const stateKey = car ? (`state.${car.state}` as TranslationKey) : undefined;
@@ -404,14 +410,23 @@ export function Dashboard() {
                 <BatteryChart carId={selectedCarId} />
               </div>
 
+              {/* Day details (picked in the activity), under the stats */}
+              <div className="flex flex-col [&>*]:flex-1 md:col-start-1 md:row-start-5 lg:col-start-1 lg:row-start-3">
+                <DayDetailCard carId={selectedCarId} day={selectedDay} />
+              </div>
+
               {/* Top destinations */}
-              <div className="flex flex-col [&>*]:flex-1 md:col-span-2 md:row-start-5 lg:col-span-1 lg:col-start-4 lg:row-start-3">
+              <div className="flex flex-col [&>*]:flex-1 md:col-start-2 md:row-start-5 lg:col-span-1 lg:col-start-4 lg:row-start-3">
                 <TopDestinations carId={selectedCarId} />
               </div>
 
               {/* Full width: 30-day driving activity */}
               <div className="md:col-span-2 md:row-start-6 lg:col-span-4 lg:row-start-4">
-                <DriveHeatmap carId={selectedCarId} />
+                <DriveHeatmap
+                  carId={selectedCarId}
+                  selectedDay={selectedDay}
+                  onSelectDay={(day) => setPickedDay({ carId: selectedCarId, day })}
+                />
               </div>
             </div>
           </>

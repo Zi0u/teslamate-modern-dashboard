@@ -261,6 +261,10 @@ const generateDriveActivity = () => {
         day: dayStr,
         drive_count: String(count),
         total_distance_km: (count * (5 + Math.random() * 15)).toFixed(1),
+        // A charge about every 4 days
+        ...(i % 4 === 0
+          ? { charge_count: "1", costed_charge_count: "1", charge_cost: (6 + Math.random() * 6).toFixed(2), charge_energy_kwh: (25 + Math.random() * 20).toFixed(1) }
+          : { charge_count: "0", costed_charge_count: "0", charge_cost: null, charge_energy_kwh: null }),
       });
     }
   }
@@ -483,6 +487,10 @@ const generateCar2DriveActivity = () => {
         day: dayStr,
         drive_count: String(count),
         total_distance_km: (count * (8 + Math.random() * 20)).toFixed(1),
+        // A charge about every 4 days
+        ...(i % 4 === 0
+          ? { charge_count: "1", costed_charge_count: "1", charge_cost: (6 + Math.random() * 6).toFixed(2), charge_energy_kwh: (25 + Math.random() * 20).toFixed(1) }
+          : { charge_count: "0", costed_charge_count: "0", charge_cost: null, charge_energy_kwh: null }),
       });
     }
   }

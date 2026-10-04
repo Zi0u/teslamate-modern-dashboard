@@ -100,18 +100,46 @@ router.get("/activity", async (req: Request, res: Response) => {
     const carId = parseInt(req.query.car_id as string) || 1;
     const days = Math.min(parseInt(req.query.days as string) || 15, 60);
 
+    // Last N days including today, from local midnight
+    const since = localToUtc(`date_trunc('day', ${localNow("$3")}) - make_interval(days => $2::int - 1)`, "$3");
+    // Drives and charges per local day (a day can have only one of them)
     const result = await pool.query(
       `
+      WITH daily_drives AS (
+        SELECT
+          TO_CHAR(${toLocal("d.start_date", "$3")}::date, 'YYYY-MM-DD') AS day,
+          COUNT(*) AS drive_count,
+          ROUND(SUM(d.distance)::numeric, 1) AS total_distance_km
+        FROM drives d
+        WHERE d.car_id = $1
+          AND d.start_date >= ${since}
+          AND d.distance > 0
+        GROUP BY day
+      ),
+      daily_charges AS (
+        SELECT
+          TO_CHAR(${toLocal("cp.start_date", "$3")}::date, 'YYYY-MM-DD') AS day,
+          COUNT(*) AS charge_count,
+          -- TeslaMate leaves cost NULL when no price is set for the location
+          COUNT(cp.cost) AS costed_charge_count,
+          ROUND(SUM(cp.cost)::numeric, 2) AS charge_cost,
+          ROUND(SUM(cp.charge_energy_added)::numeric, 1) AS charge_energy_kwh
+        FROM charging_processes cp
+        WHERE cp.car_id = $1
+          AND cp.start_date >= ${since}
+          AND cp.end_date IS NOT NULL
+        GROUP BY day
+      )
       SELECT
-        TO_CHAR(${toLocal("d.start_date", "$3")}::date, 'YYYY-MM-DD') AS day,
-        COUNT(*) AS drive_count,
-        ROUND(SUM(d.distance)::numeric, 1) AS total_distance_km
-      FROM drives d
-      WHERE d.car_id = $1
-        -- Last N days including today, from local midnight
-        AND d.start_date >= ${localToUtc(`date_trunc('day', ${localNow("$3")}) - make_interval(days => $2::int - 1)`, "$3")}
-        AND d.distance > 0
-      GROUP BY day
+        COALESCE(dd.day, dc.day) AS day,
+        COALESCE(dd.drive_count, 0) AS drive_count,
+        COALESCE(dd.total_distance_km, 0) AS total_distance_km,
+        COALESCE(dc.charge_count, 0) AS charge_count,
+        COALESCE(dc.costed_charge_count, 0) AS costed_charge_count,
+        dc.charge_cost,
+        dc.charge_energy_kwh
+      FROM daily_drives dd
+      FULL OUTER JOIN daily_charges dc ON dc.day = dd.day
       ORDER BY day
       `,
       [carId, days, getTimeZone(req)]
