@@ -276,7 +276,7 @@ export function LastChargeCard({ carId = 1 }: { carId?: number }) {
 const FUEL_CONSUMPTION = { gasoline: 6.5, diesel: 5.5 } as const;
 const FUELS = ["gasoline", "diesel"] as const;
 // Same color for a fuel's cost bar and its savings box
-const FUEL_COLOR = { gasoline: "bg-orange-500", diesel: "bg-amber-700" } as const;
+const FUEL_COLOR = { gasoline: "bg-green-500", diesel: "bg-yellow-400" } as const;
 type Fuel = (typeof FUELS)[number];
 type CustomPrices = Partial<Record<Fuel, number>>;
 
@@ -494,7 +494,7 @@ function FuelComparison({
   }
 
   const bars = [
-    ...(cost != null ? [{ key: "electric", label: t("charge.electric"), value: cost, className: "bg-emerald-500" }] : []),
+    ...(cost != null ? [{ key: "electric", label: t("charge.electric"), value: cost, className: "bg-sky-500" }] : []),
     ...fuels.map((f) => ({
       key: f.fuel,
       label: fuelLabel(f.fuel),
@@ -524,10 +524,10 @@ function FuelComparison({
       {/* Electric cost per 100 km, shown once (it doesn't depend on the fuel compared) */}
       {cost != null && (
         <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-          <Zap className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+          <Zap className="h-3.5 w-3.5 shrink-0 text-sky-400" />
           {t("charge.electricPer100")}
           <span>
-            <span className="font-semibold tabular-nums text-emerald-400">{numberFormat((cost / realKm) * 100, 2)} €</span>/100 km
+            <span className="font-semibold tabular-nums text-sky-400">{numberFormat((cost / realKm) * 100, 2)} €</span>/100 km
           </span>
         </p>
       )}
