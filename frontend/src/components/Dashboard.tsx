@@ -201,6 +201,10 @@ export function Dashboard() {
           <div className="min-w-0">
             <h1 className="text-lg sm:text-xl font-bold tracking-tight">
               TeslaMate Modern Dashboard
+              {/* Dashboard version (from package.json, injected at build time) */}
+              <span className="ml-2 inline-block rounded-md border px-1.5 py-0.5 align-middle text-[10px] font-medium tracking-normal text-muted-foreground">
+                v{__APP_VERSION__}
+              </span>
             </h1>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               {isLoading ? (
