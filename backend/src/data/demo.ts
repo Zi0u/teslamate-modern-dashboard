@@ -65,6 +65,9 @@ export const demoStats = {
     total_cost: "7.12",
     charge_count: "2",
     costed_charge_count: "2",
+    costed_energy_kwh: "28.50",
+    costed_charges_in_france: "2",
+    savings_consumption_kwh_100km: "15.2",
   },
   month: {
     total_distance_km: "842.30",
@@ -74,6 +77,9 @@ export const demoStats = {
     total_cost: "33.70",
     charge_count: "8",
     costed_charge_count: "8",
+    costed_energy_kwh: "134.80",
+    costed_charges_in_france: "8",
+    savings_consumption_kwh_100km: "16.0",
   },
   last_month: {
     total_distance_km: "1124.60",
@@ -83,6 +89,21 @@ export const demoStats = {
     total_cost: "44.10",
     charge_count: "11",
     costed_charge_count: "11",
+    costed_energy_kwh: "176.40",
+    costed_charges_in_france: "11",
+    savings_consumption_kwh_100km: "15.7",
+  },
+  year: {
+    total_distance_km: "7480.50",
+    drive_count: "412",
+    total_energy_kwh: "1196.30",
+    avg_consumption_kwh_per_100km: "15.8",
+    total_cost: "299.10",
+    charge_count: "96",
+    costed_charge_count: "96",
+    costed_energy_kwh: "1196.30",
+    costed_charges_in_france: "96",
+    savings_consumption_kwh_100km: "15.8",
   },
 };
 
@@ -283,6 +304,9 @@ export const demoCar2Stats = {
     total_cost: "4.08",
     charge_count: "1",
     costed_charge_count: "1",
+    costed_energy_kwh: "16.30",
+    costed_charges_in_france: "1",
+    savings_consumption_kwh_100km: "17.3",
   },
   month: {
     total_distance_km: "412.50",
@@ -292,6 +316,9 @@ export const demoCar2Stats = {
     total_cost: "18.10",
     charge_count: "4",
     costed_charge_count: "4",
+    costed_energy_kwh: "72.40",
+    costed_charges_in_france: "4",
+    savings_consumption_kwh_100km: "17.5",
   },
   last_month: {
     total_distance_km: "638.80",
@@ -301,6 +328,21 @@ export const demoCar2Stats = {
     total_cost: "27.55",
     charge_count: "6",
     costed_charge_count: "6",
+    costed_energy_kwh: "110.20",
+    costed_charges_in_france: "6",
+    savings_consumption_kwh_100km: "17.3",
+  },
+  year: {
+    total_distance_km: "3920.40",
+    drive_count: "187",
+    total_energy_kwh: "681.20",
+    avg_consumption_kwh_per_100km: "17.4",
+    total_cost: "187.30",
+    charge_count: "44",
+    costed_charge_count: "44",
+    costed_energy_kwh: "681.20",
+    costed_charges_in_france: "44",
+    savings_consumption_kwh_100km: "17.4",
   },
 };
 

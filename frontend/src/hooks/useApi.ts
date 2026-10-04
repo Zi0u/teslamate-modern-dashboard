@@ -56,7 +56,7 @@ export function useCarStatus(carId?: number) {
   });
 }
 
-export function usePeriodStats(period: "week" | "month" | "last_month" = "month", carId = 1) {
+export function usePeriodStats(period: "week" | "month" | "last_month" | "year" = "month", carId = 1) {
   return useQuery<MonthlyStats>({
     queryKey: ["stats", "period", period, carId],
     queryFn: () => fetchJson(`/stats/period?car_id=${carId}&period=${period}&${TZ}`),

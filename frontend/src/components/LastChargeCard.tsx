@@ -3,6 +3,7 @@ import { Zap, Clock, Gauge, MapPin, Settings2, Info, Calculator, BatteryCharging
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 import { isNotFound, useFuelPrices, useLastCharge } from "../hooks/useApi";
+import { FUEL_COLOR, FUEL_CONSUMPTION, FUEL_DATA_URL, FUELS, parsePrice, useCustomFuelPrices, type Fuel, type CustomPrices } from "../lib/fuel";
 import { useTranslation } from "../i18n/LanguageContext";
 
 function formatDuration(minutes: number) {
@@ -272,44 +273,6 @@ export function LastChargeCard({ carId = 1 }: { carId?: number }) {
   );
 }
 
-// Typical consumption of an equivalent combustion car (L/100km)
-const FUEL_CONSUMPTION = { gasoline: 6.5, diesel: 5.5 } as const;
-const FUELS = ["gasoline", "diesel"] as const;
-// Same color for a fuel's cost bar and its savings box
-const FUEL_COLOR = { gasoline: "bg-green-500", diesel: "bg-yellow-400" } as const;
-type Fuel = (typeof FUELS)[number];
-type CustomPrices = Partial<Record<Fuel, number>>;
-
-// Official French open data the national average comes from (fetched by the backend, cached 6h)
-const FUEL_DATA_URL =
-  "https://data.economie.gouv.fr/explore/dataset/prix-des-carburants-en-france-flux-instantane-v2/";
-
-// The viewer's own fuel prices, kept in this browser only (localStorage survives restarts)
-const PRICES_STORAGE_KEY = "lastCharge.fuelPrices";
-
-function readCustomPrices(): CustomPrices {
-  try {
-    const raw = localStorage.getItem(PRICES_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as CustomPrices) : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeCustomPrices(prices: CustomPrices) {
-  try {
-    if (Object.keys(prices).length) localStorage.setItem(PRICES_STORAGE_KEY, JSON.stringify(prices));
-    else localStorage.removeItem(PRICES_STORAGE_KEY);
-  } catch {
-    // storage unavailable (private mode): prices just aren't remembered
-  }
-}
-
-function parsePrice(value: string): number | undefined {
-  const n = Number(value.replace(",", ".").trim());
-  return value.trim() && Number.isFinite(n) && n > 0 && n < 100 ? n : undefined;
-}
-
 // What the same real distance would have cost with gasoline and with diesel.
 // Prices: the viewer's own prices if set ("Prices" button), else the French national
 // average — only for charges in France (country of the charge location in TeslaMate).
@@ -329,7 +292,7 @@ function FuelComparison({
 }) {
   const { locale, t } = useTranslation();
   const { data: nationalPrices } = useFuelPrices();
-  const [customPrices, setCustomPrices] = useState<CustomPrices>(readCustomPrices);
+  const [customPrices, saveCustomPrices] = useCustomFuelPrices();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Record<Fuel, string>>({ gasoline: "", diesel: "" });
 
@@ -362,14 +325,12 @@ function FuelComparison({
       const price = parsePrice(draft[f]);
       if (price) next[f] = price;
     }
-    setCustomPrices(next);
-    writeCustomPrices(next);
+    saveCustomPrices(next);
     setEditing(false);
   };
 
   const resetSettings = () => {
-    setCustomPrices({});
-    writeCustomPrices({});
+    saveCustomPrices({});
     setEditing(false);
   };
 

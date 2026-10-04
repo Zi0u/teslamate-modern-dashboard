@@ -17,7 +17,10 @@ const CONTENT = {
       ["Position en temps réel", "carte OpenStreetMap qui suit la voiture pendant les trajets, avec la météo du lieu."],
       ["Charge en cours", "bandeau en direct : niveau, énergie, puissance, températures."],
       ["Dernière charge", "énergie, coût, puissance, autonomie gagnée, et économies par rapport à une voiture essence ou diesel."],
-      ["Statistiques", "distance, consommation, énergie et coût sur la semaine, le mois ou le mois précédent."],
+      [
+        "Statistiques",
+        "distance, consommation, énergie, coût et économies vs essence / diesel sur la semaine, le mois, le mois précédent ou l'année.",
+      ],
       ["Batterie", "santé de la batterie, historique de niveau et consommation sur 7 jours."],
       ["Trajets", "10 derniers trajets, destinations favorites et activité sur 30 jours."],
       ["Multi-véhicules, FR / EN", "et un mode démo sans base de données."],
@@ -35,7 +38,7 @@ const CONTENT = {
       ["Km réels", "énergie ajoutée par la charge ÷ votre consommation moyenne des 30 derniers jours."],
       [
         "Économies vs thermique",
-        "km réels × 6,5 L/100 km (essence) ou 5,5 L/100 km (diesel) × prix du carburant. Prix : moyenne nationale France (open data prix-carburants, data.economie.gouv.fr) pour les charges en France, ou vos propres prix (bouton « Prix »).",
+        "km réels × 6,5 L/100 km (essence) ou 5,5 L/100 km (diesel) × prix du carburant, moins le coût des charges. Prix : moyenne nationale France (open data prix-carburants, data.economie.gouv.fr) pour les charges en France, ou vos propres prix (bouton « Prix »). Sur une période, seules les charges dont le coût est renseigné sont comptées.",
       ],
       [
         "Santé de la batterie",
@@ -61,7 +64,10 @@ const CONTENT = {
       ["Real-time position", "OpenStreetMap map that follows the car while driving, with the local weather."],
       ["Live charging", "live banner: level, energy, power, temperatures."],
       ["Last charge", "energy, cost, power, range gained, and savings compared to a gasoline or diesel car."],
-      ["Statistics", "distance, consumption, energy and cost for the week, the month or the previous month."],
+      [
+        "Statistics",
+        "distance, consumption, energy, cost and savings vs gasoline / diesel for the week, the month, the previous month or the year.",
+      ],
       ["Battery", "battery health, 7-day level history and consumption."],
       ["Drives", "last 10 drives, top destinations and 30-day activity."],
       ["Multiple cars, FR / EN", "and a demo mode with no database needed."],
@@ -79,7 +85,7 @@ const CONTENT = {
       ["Real km", "energy added by the charge ÷ your average consumption over the last 30 days."],
       [
         "Savings vs combustion",
-        "real km × 6.5 L/100 km (gasoline) or 5.5 L/100 km (diesel) × fuel price. Prices: French national average (prix-carburants open data, data.economie.gouv.fr) for charges in France, or your own prices (\"Prices\" button).",
+        "real km × 6.5 L/100 km (gasoline) or 5.5 L/100 km (diesel) × fuel price, minus the cost of the charges. Prices: French national average (prix-carburants open data, data.economie.gouv.fr) for charges in France, or your own prices (\"Prices\" button). Over a period, only charges with a cost set are counted.",
       ],
       [
         "Battery health",

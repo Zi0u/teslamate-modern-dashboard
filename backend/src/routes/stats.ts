@@ -23,6 +23,9 @@ router.get("/period", async (req: Request, res: Response) => {
       const endExpr = localToUtc(`date_trunc('month', ${now})`, "$2");
       endConditionDrives = `AND d.start_date < ${endExpr}`;
       endConditionCharges = `AND cp.end_date < ${endExpr}`;
+    } else if (period === "year") {
+      // Since January 1st
+      startExpr = localToUtc(`date_trunc('year', ${now})`, "$2");
     } else {
       // Default: current month
       startExpr = localToUtc(`date_trunc('month', ${now})`, "$2");
@@ -56,11 +59,32 @@ router.get("/period", async (req: Request, res: Response) => {
           COALESCE(SUM(cp.cost), 0) AS total_cost,
           COUNT(cp.id) AS charge_count,
           -- TeslaMate leaves cost NULL when no price is set for the location
-          COUNT(cp.cost) AS costed_charge_count
+          COUNT(cp.cost) AS costed_charge_count,
+          -- For the savings vs gasoline/diesel: only charges with a cost (so a missing cost
+          -- never inflates the savings), and how many of them were in France (fuel price source)
+          COALESCE(SUM(cp.charge_energy_added) FILTER (WHERE cp.cost IS NOT NULL), 0) AS costed_energy,
+          COUNT(cp.id) FILTER (
+            WHERE cp.cost IS NOT NULL AND LOWER(a.raw->'address'->>'country_code') = 'fr'
+          ) AS costed_charges_in_france
         FROM charging_processes cp
+        LEFT JOIN addresses a ON a.id = cp.address_id
         WHERE cp.car_id = $1
           AND cp.end_date >= ${startExpr}
           ${endConditionCharges}
+      ),
+      -- Consumption over the last 90 days: turns the energy charged into real km for the
+      -- savings when the period itself has no drives (e.g. a week with a charge but no drive)
+      recent_consumption AS (
+        SELECT
+          SUM((d.start_ideal_range_km - d.end_ideal_range_km) * c.efficiency)
+            FILTER (WHERE d.start_ideal_range_km > d.end_ideal_range_km)
+          / NULLIF(SUM(d.distance) FILTER (WHERE d.start_ideal_range_km > d.end_ideal_range_km), 0)
+          * 100 AS value
+        FROM drives d
+        JOIN cars c ON c.id = d.car_id
+        WHERE d.car_id = $1
+          AND d.start_date >= (NOW() AT TIME ZONE 'UTC') - interval '90 days'
+          AND d.distance > 0
       )
       SELECT
         ROUND(pd.total_distance::numeric, 2) AS total_distance_km,
@@ -75,8 +99,15 @@ router.get("/period", async (req: Request, res: Response) => {
         END AS avg_consumption_kwh_per_100km,
         ROUND(pc.total_cost::numeric, 2) AS total_cost,
         pc.charge_count,
-        pc.costed_charge_count
-      FROM period_drives pd, period_charges pc
+        pc.costed_charge_count,
+        ROUND(pc.costed_energy::numeric, 2) AS costed_energy_kwh,
+        pc.costed_charges_in_france,
+        -- kWh/100km used to convert the energy charged into real km (period first, else 90 days)
+        ROUND(COALESCE(
+          CASE WHEN pd.consumption_distance > 0 THEN pd.total_consumption_kwh / pd.consumption_distance * 100 END,
+          rc.value
+        )::numeric, 1) AS savings_consumption_kwh_100km
+      FROM period_drives pd, period_charges pc, recent_consumption rc
       `,
       [carId, getTimeZone(req)]
     );

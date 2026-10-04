@@ -32,6 +32,11 @@ export interface MonthlyStats {
   drive_count: number;
   charge_count: number;
   costed_charge_count: number;
+  // Savings vs gasoline/diesel: energy of the charges that have a cost, how many of them were in
+  // France (fuel price source), and the kWh/100km turning that energy into real km
+  costed_energy_kwh: number;
+  costed_charges_in_france: number;
+  savings_consumption_kwh_100km: number | null;
 }
 
 export interface Drive {

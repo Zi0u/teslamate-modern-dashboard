@@ -47,7 +47,7 @@ router.get("/car/status", (req: Request, res: Response) => {
 // Stats
 router.get("/stats/period", (req: Request, res: Response) => {
   const p = req.query.period as string;
-  const period = p === "week" ? "week" : p === "last_month" ? "last_month" : "month";
+  const period = p === "week" || p === "last_month" || p === "year" ? p : "month";
   const stats = carId(req) === 2 ? demoCar2Stats : demoStats;
   res.json(stats[period]);
 });

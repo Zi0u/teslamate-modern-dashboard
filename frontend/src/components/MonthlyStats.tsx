@@ -1,21 +1,25 @@
 import { useState } from "react";
-import { Route, Zap, Fuel, Hash } from "lucide-react";
+import { Route, Zap, Fuel, Hash, PiggyBank } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
-import { usePeriodStats } from "../hooks/useApi";
+import { useFuelPrices, usePeriodStats } from "../hooks/useApi";
+import { FUEL_COLOR, FUEL_CONSUMPTION, FUELS, useCustomFuelPrices } from "../lib/fuel";
 import { useTranslation } from "../i18n/LanguageContext";
 
-type Period = "week" | "month" | "last_month";
+type Period = "week" | "month" | "last_month" | "year";
 
 export function MonthlyStats({ carId = 1 }: { carId?: number }) {
   const [period, setPeriod] = useState<Period>("month");
   const { data, isLoading, error } = usePeriodStats(period, carId);
   const { locale, t } = useTranslation();
+  const { data: nationalPrices } = useFuelPrices();
+  const [customPrices] = useCustomFuelPrices();
 
   const periods: { value: Period; label: string }[] = [
     { value: "week", label: t("stats.week") },
     { value: "month", label: t("stats.month") },
     { value: "last_month", label: t("stats.lastMonth") },
+    { value: "year", label: t("stats.year") },
   ];
 
   if (isLoading) {
@@ -55,12 +59,46 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
   const costUnknown = chargeCount > 0 && costedCount === 0;
   const costPartial = costedCount > 0 && costedCount < chargeCount;
 
-  const stats = [
+  // Savings vs gasoline/diesel over the period, same logic as the last charge "Savings" tab:
+  // real km = energy of the charges with a cost ÷ consumption; combustion cost = real km ×
+  // L/100km × fuel price; savings = combustion cost − what those charges cost.
+  // Price: the viewer's own price, else the French average if all those charges were in France.
+  const costedEnergy = Number(data.costed_energy_kwh ?? 0);
+  const savingsConsumption = Number(data.savings_consumption_kwh_100km ?? 0);
+  const allInFrance = costedCount > 0 && Number(data.costed_charges_in_france ?? 0) === costedCount;
+  const realKm = savingsConsumption > 0 ? (costedEnergy / savingsConsumption) * 100 : null;
+  const savingsRows = FUELS.map((fuel) => {
+    const price = customPrices[fuel] ?? (allInFrance ? nationalPrices?.[fuel] ?? null : null);
+    const label = `${t("stats.savingsVs")} ${t(fuel === "gasoline" ? "charge.gasoline" : "charge.diesel").toLocaleLowerCase(locale)}`;
+    const base = { icon: PiggyBank, label, dot: FUEL_COLOR[fuel] };
+    if (costedCount === 0) return { ...base, value: "—", sub: chargeCount === 0 ? t("stats.noCharge") : t("stats.costNotSet") };
+    if (realKm == null) return { ...base, value: "—", sub: t("stats.notComputedYet") };
+    if (price == null) return { ...base, value: "—", sub: t("stats.noFuelPrice") };
+    const fuelCost = (realKm * FUEL_CONSUMPTION[fuel] * price) / 100;
+    const savings = fuelCost - Number(data.total_cost ?? 0);
+    return {
+      ...base,
+      value: `${costPartial ? "≈ " : ""}${formatNumber(savings, 0)} €`,
+      valueClass: savings >= 0 ? "text-emerald-400" : "text-red-400",
+      sub: fuelCost > 0 ? `${savings >= 0 ? "−" : "+"}${Math.round((Math.abs(savings) / fuelCost) * 100)} %` : "",
+      hint: costPartial ? t("stats.savingsPartialHint") : undefined,
+    };
+  });
+
+  const stats: {
+    icon: typeof Route;
+    label: string;
+    value: string;
+    sub: string;
+    hint?: string;
+    dot?: string;
+    valueClass?: string;
+  }[] = [
     {
       icon: Route,
       label: t("stats.distance"),
       value: `${formatNumber(Number(data.total_distance_km), 0)} km`,
-      sub: `${data.drive_count} ${t("stats.trips")}`,
+      sub: `${data.drive_count} ${t(Number(data.drive_count) === 1 ? "stats.trip" : "stats.trips")}`,
     },
     {
       icon: Zap,
@@ -73,7 +111,7 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
       icon: Fuel,
       label: t("stats.totalEnergy"),
       value: `${formatNumber(Number(data.total_energy_kwh), 1)} kWh`,
-      sub: `${data.charge_count} ${t("stats.charges")}`,
+      sub: `${data.charge_count} ${t(chargeCount === 1 ? "stats.charge" : "stats.charges")}`,
     },
     {
       icon: Hash,
@@ -86,6 +124,7 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
           : t("stats.thisPeriod"),
       hint: costPartial ? t("stats.costPartialHint") : undefined,
     },
+    ...savingsRows,
   ];
 
   return (
@@ -95,7 +134,7 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
           {t("stats.title")}
         </CardTitle>
         {/* Period tabs */}
-        <div role="tablist" className="mt-3 grid grid-cols-3 border-b border-border">
+        <div role="tablist" className="mt-3 grid grid-cols-4 border-b border-border">
           {periods.map(({ value, label }) => (
             <button
               key={value}
@@ -120,8 +159,11 @@ export function MonthlyStats({ carId = 1 }: { carId?: number }) {
             className="flex items-center gap-2 py-1.5 border-b border-border/50 last:border-0"
           >
             <stat.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <span className="text-xs text-muted-foreground flex-1">{stat.label}</span>
-            <span className="text-sm font-bold">{stat.value}</span>
+            <span className="flex flex-1 items-center gap-1.5 text-xs text-muted-foreground">
+              {stat.dot && <span className={`h-2 w-2 shrink-0 rounded-full ${stat.dot}`} />}
+              {stat.label}
+            </span>
+            <span className={`text-sm font-bold tabular-nums ${stat.valueClass ?? ""}`}>{stat.value}</span>
             <span
               className={`text-[10px] w-16 text-right ${stat.hint ? "text-amber-400 cursor-help" : "text-muted-foreground"}`}
               title={stat.hint}
