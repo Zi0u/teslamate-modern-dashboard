@@ -42,8 +42,11 @@ COPY backend/package.json backend/
 # Stub frontend package.json (workspaces requires it, but no deps needed)
 RUN mkdir -p frontend && echo '{"name":"frontend","private":true}' > frontend/package.json
 
-# Install production dependencies only
-RUN npm ci --omit=dev && npm cache clean --force
+# Install production dependencies only, then remove npm itself: it's only needed to install,
+# never at runtime, and the npm bundled in the Node image carries its own vulnerable
+# dependencies (flagged by Docker Scout)
+RUN npm ci --omit=dev && npm cache clean --force \
+  && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 # Copy compiled backend from builder
 COPY --from=builder /app/backend/dist/ backend/dist/
